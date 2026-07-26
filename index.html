@@ -2,351 +2,209 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sound News - Download de Músicas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sound News - Streaming, Ranking & Equalizador</title>
     
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sound News">
+    <link rel="apple-touch-icon" href="capa.jpg">
+
     <style>
+        :root {
+            --bg-body: #0b0f19;
+            --bg-container: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #0f172a;
+            --bg-control: #0f172a;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+            --mini-player-bg: rgba(30, 41, 59, 0.95);
+            --radio-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            --modal-bg: rgba(15, 23, 42, 0.95);
+            --top-badge-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-body: #e2e8f0;
+            --bg-container: #ffffff;
+            --bg-card: #f8fafc;
+            --bg-input: #edf2f7;
+            --bg-control: #e2e8f0;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --accent-color: #0284c7;
+            --border-color: #cbd5e1;
+            --mini-player-bg: rgba(255, 255, 255, 0.95);
+            --radio-gradient: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            --modal-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s ease, color 0.3s ease; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body); color: var(--text-primary); margin: 0; padding: 0;
+            display: flex; justify-content: center; min-height: 100vh; padding-bottom: 110px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background-color: #1e293b;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            position: relative;
+        .container { width: 100%; max-width: 480px; background-color: var(--bg-container); padding: 16px; min-height: 100vh; position: relative; }
+
+        /* AVISO OFFLINE */
+        .alerta-offline {
+            display: none; background-color: #ef4444; color: white; text-align: center;
+            padding: 8px; font-size: 0.8rem; font-weight: bold; border-radius: 8px; margin-bottom: 10px;
         }
 
-        .capa-header {
-            text-align: center;
-            margin-bottom: 20px;
+        .capa-header { text-align: center; margin-bottom: 15px; position: sticky; top: 0; background-color: var(--bg-container); z-index: 10; padding-top: 10px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .logo { font-size: 1.8rem; font-weight: 800; color: var(--accent-color); letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
+
+        .btn-theme-toggle {
+            background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary);
+            width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer;
         }
 
-        .logo {
-            font-size: 2.2rem;
-            font-weight: bold;
-            color: #38bdf8;
-            margin-bottom: 5px;
-        }
+        .tagline { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; margin-top: -5px; margin-bottom: 12px; font-weight: 600; text-align: left; }
 
-        .tagline {
-            color: #94a3b8;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 15px;
-        }
+        .banner-pwa { display: none; background-color: var(--accent-color); color: white; padding: 10px 14px; border-radius: 12px; margin-bottom: 12px; align-items: center; justify-content: space-between; font-size: 0.8rem; font-weight: bold; }
+        .banner-pwa button { background-color: white; color: var(--bg-container); border: none; padding: 6px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; }
 
-        /* Botão Admin */
-        .btn-abrir-admin {
-            background-color: #334155;
-            color: #38bdf8;
-            border: 1px solid #38bdf8;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 15px;
-            transition: all 0.2s;
-        }
+        /* CARD RÁDIO */
+        .card-radio { background: var(--radio-gradient); border: 1px solid var(--accent-color); border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15); display: flex; flex-direction: column; gap: 10px; }
+        .radio-top { display: flex; justify-content: space-between; align-items: center; }
+        .radio-status { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; font-weight: 800; color: #ef4444; text-transform: uppercase; background: rgba(239, 68, 68, 0.1); padding: 4px 8px; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .ponto-live { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: piscar 1.2s infinite; }
+        @keyframes piscar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
-        .btn-abrir-admin:hover {
-            background-color: #38bdf8;
-            color: #0f172a;
-        }
+        .radio-info { display: flex; align-items: center; gap: 12px; }
+        .radio-icon { font-size: 2.2rem; background-color: var(--bg-container); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); }
+        .radio-detalhes { flex: 1; }
+        .radio-titulo { font-weight: 800; font-size: 1rem; color: var(--text-primary); }
+        .radio-sub { font-size: 0.75rem; color: var(--text-secondary); }
 
-        /* PAINEL DE ADMINISTRAÇÃO (MODAL) */
-        .painel-admin {
-            display: none;
-            background-color: #0f172a;
-            border: 2px solid #38bdf8;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
+        .btn-radio-play { width: 100%; padding: 10px; background-color: var(--accent-color); color: #ffffff; font-weight: 700; border: none; border-radius: 10px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 
-        .painel-admin.visivel {
-            display: block;
-        }
+        .btn-abrir-admin { background-color: var(--bg-card); color: var(--accent-color); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-bottom: 12px; width: 100%; }
 
-        .admin-titulo {
-            color: #38bdf8;
-            font-size: 1.1rem;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        /* ADMIN */
+        .painel-admin { display: none; background-color: var(--bg-card); border: 1px solid var(--accent-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; }
+        .painel-admin.visivel { display: block; }
+        .admin-titulo { color: var(--accent-color); font-size: 0.95rem; margin-top: 0; margin-bottom: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .btn-sair-admin { background-color: #ef4444; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
+        .form-admin input, .form-admin select, .form-admin textarea { width: 100%; padding: 10px; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 8px; outline: none; font-family: inherit; }
+        .btn-salvar-admin { width: 100%; padding: 10px; background-color: #22c55e; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 8px; }
+        .btn-exportar-json { width: 100%; padding: 10px; background-color: #3b82f6; color: white; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; margin-bottom: 12px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .admin-lista-musicas { border-top: 1px solid var(--border-color); padding-top: 10px; max-height: 180px; overflow-y: auto; }
+        .admin-item-musica { display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-input); padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; }
 
-        .btn-sair-admin {
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            margin-left: 10px;
-        }
+        .caixa-pesquisa { margin-bottom: 12px; }
+        .input-pesquisa { width: 100%; padding: 12px 16px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 25px; color: var(--text-primary); font-size: 0.9rem; outline: none; }
 
-        .form-admin input, .form-admin select {
-            width: 100%;
-            padding: 10px;
-            background-color: #1e293b;
-            border: 1px solid #475569;
-            border-radius: 8px;
-            color: #f8fafc;
-            font-size: 0.85rem;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            outline: none;
-        }
+        .categorias-genero { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 10px; -webkit-overflow-scrolling: touch; }
+        .categorias-genero::-webkit-scrollbar { display: none; }
+        .btn-genero { background-color: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color); padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; flex-shrink: 0; cursor: pointer; }
+        .btn-genero.ativo { background-color: var(--accent-color); color: #ffffff; border-color: var(--accent-color); }
+        .btn-genero.top10-btn { background: var(--top-badge-bg); color: white; border: none; font-weight: bold; }
+        .btn-genero.fav-btn { background: #ef4444; color: white; border: none; font-weight: bold; }
 
-        .btn-salvar-admin {
-            width: 100%;
-            padding: 10px;
-            background-color: #22c55e;
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
+        /* CARDS MÚSICA */
+        .card-musica { background-color: var(--bg-card); border-radius: 16px; padding: 14px; margin-bottom: 14px; position: relative; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); border: 1px solid var(--border-color); }
+        .badge-genero { position: absolute; top: 20px; right: 20px; background-color: var(--bg-container); color: var(--accent-color); padding: 3px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; border: 1px solid var(--border-color); }
+        
+        .badge-top-ranking { position: absolute; top: 20px; left: 20px; background: var(--top-badge-bg); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4); z-index: 2; display: none; }
+        .card-musica.is-top .badge-top-ranking { display: block; }
 
-        .btn-salvar-admin:hover {
-            background-color: #16a34a;
-        }
-
-        /* LISTA DE EDIÇÃO/ELIMINAÇÃO NO ADMIN */
-        .admin-lista-musicas {
-            border-top: 1px solid #334155;
-            padding-top: 15px;
-            max-height: 250px;
-            overflow-y: auto;
-        }
-
-        .admin-item-musica {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #1e293b;
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
-
-        .admin-item-info {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 65%;
-        }
-
-        .admin-item-acoes {
-            display: flex;
-            gap: 6px;
-        }
-
-        .btn-admin-acao {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            padding: 4px;
-            border-radius: 4px;
-        }
-
-        .btn-admin-acao:hover {
-            background-color: #334155;
-        }
-
-        .caixa-pesquisa {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .input-pesquisa {
-            width: 100%;
-            padding: 12px 16px;
-            background-color: #0f172a;
-            border: 2px solid #334155;
-            border-radius: 10px;
-            color: #f8fafc;
-            font-size: 0.95rem;
-            outline: none;
-            box-sizing: border-box;
-        }
-
-        .categorias-genero {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            scrollbar-width: thin;
-            scrollbar-color: #38bdf8 #0f172a;
-        }
-
-        .btn-genero {
-            background-color: #0f172a;
-            color: #94a3b8;
-            border: 1px solid #334155;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .btn-genero.ativo {
-            background-color: #38bdf8;
-            color: #0f172a;
-            border-color: #38bdf8;
-        }
-
-        .card-musica {
-            background-color: #334155;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            position: relative;
-        }
-
-        .badge-genero {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            background-color: rgba(15, 23, 42, 0.85);
-            color: #38bdf8;
-            border: 1px solid #38bdf8;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .capa {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .titulo { font-size: 1.3rem; font-weight: bold; margin-bottom: 5px; }
-        .artista { color: #94a3b8; font-size: 0.95rem; margin-bottom: 15px; }
+        .capa { width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 12px; }
+        .titulo { font-size: 1.15rem; font-weight: 700; margin-bottom: 2px; color: var(--text-primary); }
+        .artista { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 10px; }
         audio { display: none; }
 
-        .progresso-container {
-            margin: 15px 0 10px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
+        .progresso-container { margin: 10px 0 6px 0; }
+        .barra-progresso { width: 100%; height: 5px; background: var(--bg-container); border-radius: 5px; accent-color: var(--accent-color); cursor: pointer; }
+        .tempo-container { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
 
-        .barra-progresso {
-            width: 100%;
-            height: 6px;
-            background: #0f172a;
-            border-radius: 5px;
-            accent-color: #38bdf8;
-            cursor: pointer;
-        }
-
-        .tempo-container {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: #cbd5e1;
-            font-weight: 600;
-        }
-
-        .controles-player {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-control {
-            background-color: #1e293b;
-            color: #f8fafc;
-            border: 1px solid #475569;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 0.95rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .btn-play {
-            width: 46px;
-            height: 46px;
-            background-color: #38bdf8;
-            color: #0f172a;
-            border: none;
-            font-size: 1.1rem;
-        }
-
+        .controles-player { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 4px; }
+        .btn-control { background-color: var(--bg-control); color: var(--text-primary); border: 1px solid var(--border-color); width: 36px; height: 36px; border-radius: 50%; font-size: 0.85rem; display: flex; justify-content: center; align-items: center; text-decoration: none; cursor: pointer; }
+        .btn-play { width: 46px; height: 46px; background-color: var(--accent-color); color: #ffffff; border: none; font-size: 1.1rem; }
         .btn-whatsapp { background-color: #25d366; color: white; border: none; }
         .btn-download-icon { background-color: #22c55e; color: white; border: none; }
         .btn-like.ativo { background-color: #ef4444; color: white; border-color: #ef4444; }
 
-        .estatisticas-musica {
-            margin-top: 12px;
-            font-size: 0.8rem;
-            color: #cbd5e1;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            background-color: #1e293b;
-            padding: 6px 14px;
-            border-radius: 20px;
-            width: fit-content;
-            margin: 12px auto 0 auto;
-        }
+        .estatisticas-musica { margin-top: 10px; font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 12px; justify-content: center; }
 
-        .sem-resultados { text-align: center; color: #94a3b8; padding: 20px 0; display: none; }
+        /* MINI PLAYER FIXO & CONTROLES EXTRA */
+        .mini-player { 
+            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); 
+            width: 100%; max-width: 480px; background-color: var(--mini-player-bg); 
+            backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); 
+            padding: 8px 16px 12px 16px; display: none; flex-direction: column; gap: 4px; z-index: 100; 
+        }
+        .mini-player.ativo { display: flex; }
+        
+        .mini-player-corpo { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+        .mini-info { display: flex; align-items: center; gap: 10px; overflow: hidden; max-width: 55%; }
+        .mini-capa { width: 42px; height: 42px; border-radius: 6px; object-fit: cover; }
+        .mini-texto { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .mini-titulo { font-size: 0.85rem; font-weight: bold; color: var(--text-primary); }
+        .mini-artista { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .mini-controles-grupo { display: flex; align-items: center; gap: 6px; }
+
+        .btn-mini-opt { background: none; border: none; color: var(--text-secondary); font-size: 0.95rem; cursor: pointer; padding: 4px; }
+        .btn-mini-opt.ativo { color: var(--accent-color); font-weight: bold; }
+
+        .visualizer-canvas { width: 100%; height: 18px; border-radius: 4px; background: transparent; }
+
+        /* MODAL LETRAS & SLEEP TIMER */
+        .modal-letra { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); backdrop-filter: blur(15px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal-letra.ativo { display: flex; }
+        .modal-conteudo { background-color: var(--bg-card); width: 100%; max-width: 420px; max-height: 80vh; border-radius: 20px; border: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; position: relative; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 14px; }
+        .modal-titulo { font-size: 1.1rem; font-weight: bold; color: var(--text-primary); }
+        .modal-sub { font-size: 0.8rem; color: var(--accent-color); font-weight: 600; }
+        .btn-fechar-modal { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; }
+        .modal-corpo { overflow-y: auto; font-size: 0.95rem; line-height: 1.7; color: var(--text-primary); text-align: center; white-space: pre-line; padding: 10px 5px; }
+
+        .opcoes-timer { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .btn-timer-opt { padding: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 10px; font-weight: bold; cursor: pointer; }
+
+        .sem-resultados { text-align: center; color: var(--text-muted); padding: 20px 0; display: none; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <header class="capa-header">
-            <div class="logo">🎧 Sound News</div>
-            <div class="tagline">Lançamentos & Downloads Exclusivos</div>
+        <div id="alerta-offline" class="alerta-offline">⚠️ Está sem ligação à Internet. Modo Offline.</div>
 
-            <button class="btn-abrir-admin" onclick="togglePainelAdmin()">⚙️ Gestão / Painel Admin</button>
+        <header class="capa-header">
+            <div class="header-top">
+                <div class="logo">🎧 Sound News</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-theme-toggle" onclick="abrirModalSleep()" title="Temporizador para Adormecer">💤</button>
+                    <button class="btn-theme-toggle" onclick="toggleTheme()" id="btn-theme">🌙</button>
+                </div>
+            </div>
+            <div class="tagline">Streaming, Ranking & Equalizador</div>
+
+            <div id="banner-pwa" class="banner-pwa">
+                <span>📲 Instalar App Sound News</span>
+                <button onclick="instalarPWA()">Instalar</button>
+            </div>
+
+            <button class="btn-abrir-admin" onclick="togglePainelAdmin()">⚙️ Painel de Gestão (Admin)</button>
 
             <!-- PAINEL ADMIN -->
             <div id="painel-admin" class="painel-admin">
                 <div class="admin-titulo">
-                    <span id="admin-form-titulo">➕ Adicionar Nova Música</span>
+                    <span id="admin-form-titulo">➕ Adicionar Música</span>
                     <div>
                         <button class="btn-sair-admin" onclick="fecharSessaoAdmin()">🔒 Sair</button>
                         <span style="cursor:pointer; margin-left: 10px;" onclick="togglePainelAdmin()">❌</span>
@@ -366,25 +224,53 @@
                         <option value="Afro House">Afro House</option>
                         <option value="Gospel">Gospel</option>
                     </select>
-                    <input type="text" id="admin-capa" placeholder="Caminho da Capa (ex: capa.jpg)" value="capa.jpg">
-                    <input type="text" id="admin-audio" placeholder="Nome do Ficheiro Áudio (ex: musica.mp3)" required>
+                    <input type="text" id="admin-capa" placeholder="Ficheiro Capa (ex: capa.jpg)" value="capa.jpg">
+                    <input type="text" id="admin-audio" placeholder="Ficheiro Áudio (ex: musica.mp3)" required>
+                    <div style="display:flex; gap:8px;">
+                        <input type="number" id="admin-dl-inicial" placeholder="Downloads iniciais" value="0">
+                        <input type="number" id="admin-like-inicial" placeholder="Likes iniciais" value="0">
+                    </div>
+                    <textarea id="admin-letra" rows="3" placeholder="Letra da música (opcional)..."></textarea>
                     
                     <button type="submit" id="btn-submit-admin" class="btn-salvar-admin">🚀 Salvar Música</button>
-                    <button type="button" id="btn-cancelar-edicao" style="display:none; width:100%; padding:8px; background:#64748b; color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom:15px;" onclick="limparFormularioAdmin()">Cancelar Edição</button>
+                    <button type="button" id="btn-cancelar-edicao" style="display:none; width:100%; padding:8px; background:#64748b; color:white; border:none; border-radius:8px; cursor:pointer; margin-bottom:8px;" onclick="limparFormularioAdmin()">Cancelar Edição</button>
                 </form>
 
-                <div class="admin-titulo" style="font-size: 0.95rem; margin-bottom: 10px;">
-                    📋 Músicas no Catálogo (<span id="admin-total-musicas">0</span>)
+                <button class="btn-exportar-json" onclick="descarregarJsonAtualizado()">💾 Baixar musicas.json Atualizado</button>
+
+                <div class="admin-titulo" style="font-size: 0.85rem; margin-bottom: 8px;">
+                    📋 Catálogo (<span id="admin-total-musicas">0</span>)
                 </div>
                 <div id="admin-lista-musicas" class="admin-lista-musicas"></div>
             </div>
 
+            <!-- CARD RÁDIO -->
+            <div class="card-radio">
+                <div class="radio-top">
+                    <span class="radio-status"><div class="ponto-live"></div> EM DIRETO</span>
+                    <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">24/7 WebRadio</span>
+                </div>
+                <div class="radio-info">
+                    <div class="radio-icon">📻</div>
+                    <div class="radio-detalhes">
+                        <div class="radio-titulo">Rádio Sound News FM</div>
+                        <div class="radio-sub">As melhores novidades & Hits de Moçambique</div>
+                    </div>
+                </div>
+                <audio id="audio-radio" crossorigin="anonymous" preload="none">
+                    <source src="https://stream.zeno.fm/f3wvbb1ndg8uv" type="audio/mpeg">
+                </audio>
+                <button class="btn-radio-play" onclick="toggleRadio()" id="btn-radio-main">▶️ Ouvir Rádio em Direto</button>
+            </div>
+
             <div class="caixa-pesquisa">
-                <input type="text" id="input-pesquisa" class="input-pesquisa" placeholder="🔍 Pesquisar por artista ou título..." oninput="filtrarMusicas()">
+                <input type="text" id="input-pesquisa" class="input-pesquisa" placeholder="🔍 Pesquisar música ou artista..." oninput="filtrarMusicas()">
             </div>
 
             <div class="categorias-genero">
                 <button class="btn-genero ativo" onclick="selecionarGenero(this, 'todos')">Todos</button>
+                <button class="btn-genero fav-btn" onclick="selecionarGenero(this, 'favoritos')">❤️ Favoritos</button>
+                <button class="btn-genero top10-btn" onclick="selecionarGenero(this, 'top10')">🔥 Top 10</button>
                 <button class="btn-genero" onclick="selecionarGenero(this, 'Pandza')">Pandza</button>
                 <button class="btn-genero" onclick="selecionarGenero(this, 'Marrabenta')">Marrabenta</button>
                 <button class="btn-genero" onclick="selecionarGenero(this, 'Amapiano')">Amapiano</button>
@@ -396,32 +282,298 @@
         </header>
 
         <div id="lista-musicas"></div>
-        <div id="sem-resultados" class="sem-resultados">Nenhuma música encontrada nesta categoria.</div>
+        <div id="sem-resultados" class="sem-resultados">Nenhuma música encontrada.</div>
+    </div>
+
+    <!-- MINI PLAYER FIXO COM SHUFFLE/REPEAT & EQUALIZADOR -->
+    <div id="mini-player" class="mini-player">
+        <canvas id="equalizer-canvas" class="visualizer-canvas"></canvas>
+        
+        <div class="mini-player-corpo">
+            <div class="mini-info">
+                <img id="mini-capa" src="capa.jpg" class="mini-capa">
+                <div class="mini-texto">
+                    <div id="mini-titulo" class="mini-titulo">Música</div>
+                    <div id="mini-artista" class="mini-artista">Artista</div>
+                </div>
+            </div>
+            
+            <div class="mini-controles-grupo">
+                <button id="btn-shuffle" class="btn-mini-opt" onclick="toggleShuffle()" title="Modo Aleatório">🔀</button>
+                <button id="btn-repeat" class="btn-mini-opt" onclick="toggleRepeat()" title="Repetir Faixa">🔁</button>
+                <button id="mini-btn-play" class="btn-control btn-play" style="width: 38px; height: 38px; font-size: 0.95rem;" onclick="toggleMiniPlay()">▶️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE LETRAS -->
+    <div id="modal-letra" class="modal-letra" onclick="fecharModalLetraFora(event)">
+        <div class="modal-conteudo">
+            <div class="modal-header">
+                <div>
+                    <div id="modal-musica-titulo" class="modal-titulo">Título</div>
+                    <div id="modal-musica-artista" class="modal-sub">Artista</div>
+                </div>
+                <button class="btn-fechar-modal" onclick="fecharModalLetra()">❌</button>
+            </div>
+            <div id="modal-corpo-letra" class="modal-corpo">Carregando letra...</div>
+        </div>
+    </div>
+
+    <!-- MODAL SLEEP TIMER -->
+    <div id="modal-sleep" class="modal-letra" onclick="fecharModalSleepFora(event)">
+        <div class="modal-conteudo">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-titulo">💤 Temporizador</div>
+                    <div id="timer-status" class="modal-sub">Desativado</div>
+                </div>
+                <button class="btn-fechar-modal" onclick="fecharModalSleep()">❌</button>
+            </div>
+            <div class="opcoes-timer">
+                <button class="btn-timer-opt" onclick="definirSleepTimer(15)">⏱️ 15 Minutos</button>
+                <button class="btn-timer-opt" onclick="definirSleepTimer(30)">⏱️ 30 Minutos</button>
+                <button class="btn-timer-opt" onclick="definirSleepTimer(45)">⏱️ 45 Minutos</button>
+                <button class="btn-timer-opt" onclick="definirSleepTimer(60)">⏱️ 60 Minutos</button>
+                <button class="btn-timer-opt" style="background:#ef4444; color:white;" onclick="cancelarSleepTimer()">❌ Cancelar Temporizador</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        const SENHA_ADMIN = "Nelcia"; 
+        const SENHA_ADMIN = "admin123"; 
         let adminAutenticado = false;
 
         let musicas = [];
         let generoSelecionado = 'todos';
+        let musicaAtivaIndex = -1;
+        let radioAcontecer = false;
+        let deferredPrompt;
+
+        let isShuffle = false;
+        let isRepeat = false;
+        let sleepTimerId = null;
+
+        // MOTOR DO EQUALIZADOR WEB AUDIO API
+        let audioCtx, analyser, dataArray, canvas, canvasCtx, animationId;
+        let audioSourcesMap = new WeakMap();
+        let isPlayingAudio = false;
+
+        // VERIFICAÇÃO OFFLINE
+        window.addEventListener('online', atualizarEstadoRede);
+        window.addEventListener('offline', atualizarEstadoRede);
+
+        function atualizarEstadoRede() {
+            const alerta = document.getElementById('alerta-offline');
+            if (!navigator.onLine) {
+                alerta.style.display = 'block';
+            } else {
+                alerta.style.display = 'none';
+            }
+        }
+
+        function initVisualizer() {
+            canvas = document.getElementById('equalizer-canvas');
+            canvasCtx = canvas.getContext('2d');
+        }
+
+        function conectarEqualizador(elementAudio) {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+            }
+
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (!audioSourcesMap.has(elementAudio)) {
+                try {
+                    const source = audioCtx.createMediaElementSource(elementAudio);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    audioSourcesMap.set(elementAudio, true);
+                } catch(e) {
+                    console.log("Equalizador em modo simulação de segurança");
+                }
+            }
+        }
+
+        function desenharEqualizador() {
+            animationId = requestAnimationFrame(desenharEqualizador);
+            if (!canvasCtx || !canvas) return;
+
+            const width = canvas.width = canvas.offsetWidth;
+            const height = canvas.height = canvas.offsetHeight;
+            canvasCtx.clearRect(0, 0, width, height);
+
+            const bufferLength = analyser ? analyser.frequencyBinCount : 16;
+            if (analyser && isPlayingAudio) analyser.getByteFrequencyData(dataArray);
+
+            const barWidth = (width / (bufferLength * 0.75));
+            let x = 0;
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim() || '#38bdf8';
+
+            for (let i = 0; i < bufferLength; i++) {
+                let barHeight;
+                if (isPlayingAudio) {
+                    if (analyser && dataArray[i] > 0) {
+                        barHeight = (dataArray[i] / 255) * height;
+                    } else {
+                        barHeight = Math.sin(Date.now() * 0.008 + i) * (height / 2.5) + (height / 2);
+                    }
+                } else {
+                    barHeight = 2;
+                }
+
+                canvasCtx.fillStyle = accentColor;
+                canvasCtx.fillRect(x, height - barHeight, barWidth - 2, barHeight);
+                x += barWidth;
+            }
+        }
+
+        function iniciarAnimacaoEqualizador() {
+            isPlayingAudio = true;
+            if (!animationId) desenharEqualizador();
+        }
+
+        function pausarAnimacaoEqualizador() { isPlayingAudio = false; }
+
+        // SLEEP TIMER
+        function abrirModalSleep() { document.getElementById('modal-sleep').classList.add('ativo'); }
+        function fecharModalSleep() { document.getElementById('modal-sleep').classList.remove('ativo'); }
+        function fecharModalSleepFora(e) { if (e.target.id === 'modal-sleep') fecharModalSleep(); }
+
+        function definirSleepTimer(minutos) {
+            cancelarSleepTimer();
+            const ms = minutos * 60 * 1000;
+            sleepTimerId = setTimeout(() => {
+                pausarTodasMusicas();
+                pausarRadio();
+                alert("💤 O Temporizador desligou o leitor de música.");
+                document.getElementById('timer-status').textContent = "Desativado";
+            }, ms);
+
+            document.getElementById('timer-status').textContent = `Ativo: ${minutos} minutos`;
+            fecharModalSleep();
+        }
+
+        function cancelarSleepTimer() {
+            if (sleepTimerId) {
+                clearTimeout(sleepTimerId);
+                sleepTimerId = null;
+            }
+            document.getElementById('timer-status').textContent = "Desativado";
+            fecharModalSleep();
+        }
+
+        // SHUFFLE / REPEAT
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            document.getElementById('btn-shuffle').classList.toggle('ativo', isShuffle);
+        }
+
+        function toggleRepeat() {
+            isRepeat = !isRepeat;
+            document.getElementById('btn-repeat').classList.toggle('ativo', isRepeat);
+        }
+
+        // PWA REGISTRO
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Erro:', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('banner-pwa').style.display = 'flex';
+        });
+
+        function instalarPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') document.getElementById('banner-pwa').style.display = 'none';
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        // TEMA
+        function initTheme() {
+            const themeSalvo = localStorage.getItem('soundnews_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', themeSalvo);
+            document.getElementById('btn-theme').textContent = themeSalvo === 'light' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const themeAtual = document.documentElement.getAttribute('data-theme') || 'dark';
+            const novoTheme = themeAtual === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', novoTheme);
+            localStorage.setItem('soundnews_theme', novoTheme);
+            document.getElementById('btn-theme').textContent = novoTheme === 'light' ? '☀️' : '🌙';
+        }
+
+        // RÁDIO
+        function toggleRadio() {
+            const playerRadio = document.getElementById('audio-radio');
+            const btnMain = document.getElementById('btn-radio-main');
+
+            if (!radioAcontecer) {
+                pausarTodasMusicas();
+                conectarEqualizador(playerRadio);
+                playerRadio.play();
+                radioAcontecer = true;
+                btnMain.textContent = "⏸️ Pausar Rádio em Direto";
+                btnMain.style.backgroundColor = "#ef4444";
+
+                document.getElementById('mini-capa').src = "capa.jpg";
+                document.getElementById('mini-titulo').textContent = "📻 Rádio Sound News FM";
+                document.getElementById('mini-artista').textContent = "Emissão em Direto 24/7";
+                document.getElementById('mini-btn-play').textContent = "⏸️";
+                document.getElementById('mini-player').classList.add('ativo');
+                musicaAtivaIndex = -2;
+                iniciarAnimacaoEqualizador();
+            } else {
+                playerRadio.pause();
+                radioAcontecer = false;
+                btnMain.textContent = "▶️ Ouvir Rádio em Direto";
+                btnMain.style.backgroundColor = "var(--accent-color)";
+                document.getElementById('mini-btn-play').textContent = "▶️";
+                pausarAnimacaoEqualizador();
+            }
+        }
+
+        function pausarRadio() {
+            const playerRadio = document.getElementById('audio-radio');
+            const btnMain = document.getElementById('btn-radio-main');
+            if (radioAcontecer) {
+                playerRadio.pause();
+                radioAcontecer = false;
+                btnMain.textContent = "▶️ Ouvir Rádio em Direto";
+                btnMain.style.backgroundColor = "var(--accent-color)";
+            }
+        }
+
+        function pausarTodasMusicas() {
+            document.querySelectorAll('audio').forEach(p => { if (p.id !== 'audio-radio') p.pause(); });
+            document.querySelectorAll('.btn-play').forEach(b => { if (b.id !== 'btn-radio-main' && b.id !== 'mini-btn-play') b.textContent = "▶️"; });
+            pausarAnimacaoEqualizador();
+        }
 
         function togglePainelAdmin() {
             const painel = document.getElementById('painel-admin');
-
-            if (painel.classList.contains('visivel')) {
-                painel.classList.remove('visivel');
-                return;
-            }
-
+            if (painel.classList.contains('visivel')) return painel.classList.remove('visivel');
+            
             if (!adminAutenticado) {
-                const senhaDigitada = prompt("🔐 Introduza a palavra-passe do Administrador:");
-                if (senhaDigitada === SENHA_ADMIN) {
+                const senha = prompt("🔐 Introduza a palavra-passe:");
+                if (senha === SENHA_ADMIN) {
                     adminAutenticado = true;
                     painel.classList.add('visivel');
-                } else if (senhaDigitada !== null) {
-                    alert("❌ Palavra-passe incorreta!");
-                }
+                } else if (senha !== null) alert("❌ Palavra-passe incorreta!");
             } else {
                 painel.classList.add('visivel');
             }
@@ -430,7 +582,6 @@
         function fecharSessaoAdmin() {
             adminAutenticado = false;
             document.getElementById('painel-admin').classList.remove('visivel');
-            alert("🔒 Sessão de Administrador terminada.");
         }
 
         async function carregarMusicas() {
@@ -439,12 +590,9 @@
                 try {
                     const resposta = await fetch('musicas.json');
                     dadosJson = await resposta.json();
-                } catch (e) {
-                    console.log("Aviso: musicas.json não encontrado ou bloqueado.");
-                }
+                } catch (e) {}
 
                 const salvasLocal = localStorage.getItem('soundnews_catalogo_completo');
-                
                 if (salvasLocal) {
                     musicas = JSON.parse(salvasLocal);
                 } else {
@@ -459,31 +607,62 @@
             }
         }
 
+        function calcularPontuacaoTop(m) {
+            const dl = parseInt(obterEstatistica(m.id, 'dl', m.downloadsIniciais || 0));
+            const likes = parseInt(obterEstatistica(m.id, 'like', m.likesIniciais || 0));
+            return dl + (likes * 2);
+        }
+
         function guardarCatalogoLocal() {
             localStorage.setItem('soundnews_catalogo_completo', JSON.stringify(musicas));
+        }
+
+        function descarregarJsonAtualizado() {
+            if (musicas.length === 0) return alert("O catálogo está vazio!");
+            const blob = new Blob([JSON.stringify(musicas, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "musicas.json";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function renderizarCatalogo() {
             const lista = document.getElementById('lista-musicas');
             lista.innerHTML = '';
 
+            const ordenadasPorTop = [...musicas].sort((a, b) => calcularPontuacaoTop(b) - calcularPontuacaoTop(a));
+            const top10Ids = ordenadasPorTop.slice(0, 10).map(m => m.id);
+
             musicas.forEach((m, index) => {
                 const downloadsAtuais = obterEstatistica(m.id, 'dl', m.downloadsIniciais || 0);
                 const likesAtuais = obterEstatistica(m.id, 'like', m.likesIniciais || 0);
                 const jaDeuLike = localStorage.getItem(`soundnews_liked_${m.id}`) === 'true';
 
+                const posicaoTop = top10Ids.indexOf(m.id);
+                const eTop10 = posicaoTop !== -1;
+                
+                let iconeMedalha = `#${posicaoTop + 1} TOP`;
+                if (posicaoTop === 0) iconeMedalha = "🥇 #1 TOP";
+                else if (posicaoTop === 1) iconeMedalha = "🥈 #2 TOP";
+                else if (posicaoTop === 2) iconeMedalha = "🥉 #3 TOP";
+
                 const card = document.createElement('div');
-                card.className = 'card-musica';
+                card.className = `card-musica ${eTop10 ? 'is-top' : ''}`;
                 card.id = `musica-card-${m.id}`;
                 card.setAttribute('data-genero', m.genero);
+                card.setAttribute('data-id', m.id);
 
                 card.innerHTML = `
+                    <span class="badge-top-ranking">${iconeMedalha}</span>
                     <span class="badge-genero">${m.genero}</span>
                     <img src="${m.capa}" alt="Capa" class="capa">
                     <div class="titulo">${m.titulo}</div>
                     <div class="artista">${m.artista}</div>
 
-                    <audio id="audio-${m.id}" preload="metadata">
+                    <audio id="audio-${m.id}" crossorigin="anonymous" preload="metadata">
                         <source src="${m.audio}" type="audio/mpeg">
                     </audio>
 
@@ -497,22 +676,24 @@
 
                     <div class="controles-player">
                         <button class="btn-control" onclick="mudarMusica(${index}, -1)">⏮️</button>
-                        <button class="btn-control btn-play" onclick="togglePlay(this)">▶️</button>
+                        <button class="btn-control btn-play" onclick="togglePlay(this, ${index})">▶️</button>
                         <button class="btn-control" onclick="mudarMusica(${index}, 1)">⏭️</button>
+                        <button class="btn-control" onclick="abrirModalLetra(${m.id})" title="Ver Letra">📜</button>
                         <button class="btn-control btn-like ${jaDeuLike ? 'ativo' : ''}" onclick="toggleLike(this, ${m.id})">❤️</button>
                         <button class="btn-control btn-whatsapp" onclick="partilharWhatsApp('${m.titulo}', '${m.artista}', ${m.id})">💬</button>
                         <a href="${m.audio}" download="${m.downloadNome || m.titulo}" class="btn-control btn-download-icon" onclick="registrarDownload(${m.id})">⬇️</a>
                     </div>
 
                     <div class="estatisticas-musica">
-                        <span>📥 <span id="count-dl-${m.id}">${downloadsAtuais}</span> downloads</span>
-                        <span>❤️ <span id="count-like-${m.id}">${likesAtuais}</span> gostos</span>
+                        <span>📥 <span id="count-dl-${m.id}">${downloadsAtuais}</span></span>
+                        <span>❤️ <span id="count-like-${m.id}">${likesAtuais}</span></span>
                     </div>
                 `;
                 lista.appendChild(card);
             });
 
             configurarPlayers();
+            filtrarMusicas();
         }
 
         function atualizarListaAdmin() {
@@ -524,12 +705,12 @@
                 const item = document.createElement('div');
                 item.className = 'admin-item-musica';
                 item.innerHTML = `
-                    <div class="admin-item-info">
+                    <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:65%;">
                         <strong>${m.titulo}</strong> - ${m.artista}
                     </div>
-                    <div class="admin-item-acoes">
-                        <button class="btn-admin-acao" onclick="carregarParaEdicao(${m.id})" title="Editar">✏️</button>
-                        <button class="btn-admin-acao" onclick="eliminarMusica(${m.id})" title="Eliminar">🗑️</button>
+                    <div>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="carregarParaEdicao(${m.id})">✏️</button>
+                        <button style="background:none; border:none; cursor:pointer;" onclick="eliminarMusica(${m.id})">🗑️</button>
                     </div>
                 `;
                 container.appendChild(item);
@@ -538,13 +719,15 @@
 
         function salvarMusicaAdmin(e) {
             e.preventDefault();
-            
             const idForm = document.getElementById('admin-id').value;
             const titulo = document.getElementById('admin-titulo').value;
             const artista = document.getElementById('admin-artista').value;
             const genero = document.getElementById('admin-genero').value;
             const capa = document.getElementById('admin-capa').value || 'capa.jpg';
             const audio = document.getElementById('admin-audio').value;
+            const dlInicial = parseInt(document.getElementById('admin-dl-inicial').value) || 0;
+            const likeInicial = parseInt(document.getElementById('admin-like-inicial').value) || 0;
+            const letra = document.getElementById('admin-letra').value;
 
             if (idForm) {
                 const index = musicas.findIndex(m => m.id == idForm);
@@ -554,19 +737,15 @@
                     musicas[index].genero = genero;
                     musicas[index].capa = capa;
                     musicas[index].audio = audio;
-                    musicas[index].downloadNome = `${artista} - ${titulo}.mp3`;
+                    musicas[index].letra = letra;
                 }
             } else {
                 const nova = {
                     id: Date.now(),
-                    titulo,
-                    artista,
-                    genero,
-                    capa,
-                    audio,
+                    titulo, artista, genero, capa, audio, letra,
                     downloadNome: `${artista} - ${titulo}.mp3`,
-                    downloadsIniciais: 0,
-                    likesIniciais: 0
+                    downloadsIniciais: dlInicial,
+                    likesIniciais: likeInicial
                 };
                 musicas.push(nova);
             }
@@ -580,16 +759,18 @@
         function carregarParaEdicao(id) {
             const m = musicas.find(item => item.id == id);
             if (!m) return;
-
             document.getElementById('admin-id').value = m.id;
             document.getElementById('admin-titulo').value = m.titulo;
             document.getElementById('admin-artista').value = m.artista;
             document.getElementById('admin-genero').value = m.genero;
             document.getElementById('admin-capa').value = m.capa;
             document.getElementById('admin-audio').value = m.audio;
+            document.getElementById('admin-dl-inicial').value = m.downloadsIniciais || 0;
+            document.getElementById('admin-like-inicial').value = m.likesIniciais || 0;
+            document.getElementById('admin-letra').value = m.letra || '';
 
             document.getElementById('admin-form-titulo').textContent = '✏️ Editar Música';
-            document.getElementById('btn-submit-admin').textContent = '🔄 Atualizar Dados';
+            document.getElementById('btn-submit-admin').textContent = '🔄 Atualizar';
             document.getElementById('btn-cancelar-edicao').style.display = 'block';
         }
 
@@ -599,52 +780,106 @@
             document.getElementById('admin-artista').value = '';
             document.getElementById('admin-capa').value = 'capa.jpg';
             document.getElementById('admin-audio').value = '';
-
-            document.getElementById('admin-form-titulo').textContent = '➕ Adicionar Nova Música';
+            document.getElementById('admin-dl-inicial').value = '0';
+            document.getElementById('admin-like-inicial').value = '0';
+            document.getElementById('admin-letra').value = '';
+            document.getElementById('admin-form-titulo').textContent = '➕ Adicionar Música';
             document.getElementById('btn-submit-admin').textContent = '🚀 Salvar Música';
             document.getElementById('btn-cancelar-edicao').style.display = 'none';
         }
 
         function eliminarMusica(id) {
-            if (confirm("Tem certeza de que pretende eliminar esta música?")) {
+            if (confirm("Eliminar esta música?")) {
                 musicas = musicas.filter(m => m.id != id);
                 guardarCatalogoLocal();
                 renderizarCatalogo();
                 atualizarListaAdmin();
-                limparFormularioAdmin();
             }
         }
 
-        // PLAYER CONTROLS
-        function togglePlay(botao) {
+        function abrirModalLetra(id) {
+            const m = musicas.find(item => item.id == id);
+            if (!m) return;
+            document.getElementById('modal-musica-titulo').textContent = m.titulo;
+            document.getElementById('modal-musica-artista').textContent = m.artista;
+            const corpo = document.getElementById('modal-corpo-letra');
+            corpo.textContent = (m.letra && m.letra.trim()) ? m.letra : '📜 Letra indisponível no momento.';
+            document.getElementById('modal-letra').classList.add('ativo');
+        }
+
+        function fecharModalLetra() { document.getElementById('modal-letra').classList.remove('ativo'); }
+        function fecharModalLetraFora(e) { if (e.target.id === 'modal-letra') fecharModalLetra(); }
+
+        function togglePlay(botao, index) {
             const card = botao.closest('.card-musica');
             const player = card.querySelector('audio');
-            const todos = document.querySelectorAll('audio');
-            const btns = document.querySelectorAll('.btn-play');
 
             if (!player.paused) {
                 player.pause();
                 botao.textContent = "▶️";
+                atualizarMiniPlayer(false);
+                pausarAnimacaoEqualizador();
             } else {
-                todos.forEach((p, i) => { p.pause(); btns[i].textContent = "▶️"; });
+                pausarRadio();
+                pausarTodasMusicas();
+                conectarEqualizador(player);
                 player.play();
                 botao.textContent = "⏸️";
+                musicaAtivaIndex = index;
+                atualizarMiniPlayer(true);
+                iniciarAnimacaoEqualizador();
             }
+        }
+
+        function atualizarMiniPlayer(aTocar) {
+            if (musicaAtivaIndex === -2 || musicaAtivaIndex === -1) return;
+            const m = musicas[musicaAtivaIndex];
+            document.getElementById('mini-capa').src = m.capa;
+            document.getElementById('mini-titulo').textContent = m.titulo;
+            document.getElementById('mini-artista').textContent = m.artista;
+            document.getElementById('mini-btn-play').textContent = aTocar ? "⏸️" : "▶️";
+            document.getElementById('mini-player').classList.add('ativo');
+        }
+
+        function toggleMiniPlay() {
+            if (musicaAtivaIndex === -2) return toggleRadio();
+            if (musicaAtivaIndex === -1) return;
+            const card = document.querySelectorAll('.card-musica')[musicaAtivaIndex];
+            togglePlay(card.querySelector('.btn-play'), musicaAtivaIndex);
         }
 
         function mudarMusica(indexAtual, direcao) {
             const cartoes = Array.from(document.querySelectorAll('.card-musica')).filter(c => c.style.display !== 'none');
             const cardAtual = document.querySelectorAll('.card-musica')[indexAtual];
             const idxFiltrado = cartoes.indexOf(cardAtual);
-            const novoIndex = idxFiltrado + direcao;
+
+            let novoIndex;
+
+            if (isRepeat && direcao === 1) {
+                novoIndex = idxFiltrado; 
+            } else if (isShuffle && direcao === 1) {
+                novoIndex = Math.floor(Math.random() * cartoes.length);
+            } else {
+                novoIndex = idxFiltrado + direcao;
+            }
 
             if (novoIndex >= 0 && novoIndex < cartoes.length) {
-                cardAtual.querySelector('audio').pause();
-                cardAtual.querySelector('.btn-play').textContent = "▶️";
+                pausarRadio();
+                if(cardAtual) {
+                    cardAtual.querySelector('audio').pause();
+                    cardAtual.querySelector('.btn-play').textContent = "▶️";
+                }
 
                 const novoCard = cartoes[novoIndex];
-                novoCard.querySelector('audio').play();
+                const realIndex = Array.from(document.querySelectorAll('.card-musica')).indexOf(novoCard);
+                const novoPlayer = novoCard.querySelector('audio');
+                
+                conectarEqualizador(novoPlayer);
+                novoPlayer.play();
                 novoCard.querySelector('.btn-play').textContent = "⏸️";
+                musicaAtivaIndex = realIndex;
+                atualizarMiniPlayer(true);
+                iniciarAnimacaoEqualizador();
                 novoCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
@@ -664,10 +899,9 @@
                     }
                 });
 
-                // REPRODUÇÃO CONTÍNUA (AUTO-NEXT)
                 player.addEventListener('ended', () => {
                     card.querySelector('.btn-play').textContent = "▶️";
-                    mudarMusica(index, 1); // Passa para a próxima música visível
+                    mudarMusica(index, 1);
                 });
             });
         }
@@ -681,15 +915,44 @@
 
         function filtrarMusicas() {
             const termo = document.getElementById('input-pesquisa').value.toLowerCase().trim();
+            const container = document.getElementById('lista-musicas');
+            const cards = Array.from(document.querySelectorAll('.card-musica'));
+
+            if (generoSelecionado === 'top10') {
+                cards.sort((a, b) => {
+                    const idA = parseInt(a.getAttribute('data-id'));
+                    const idB = parseInt(b.getAttribute('data-id'));
+                    const mA = musicas.find(m => m.id === idA);
+                    const mB = musicas.find(m => m.id === idB);
+                    return calcularPontuacaoTop(mB) - calcularPontuacaoTop(mA);
+                });
+                cards.forEach(card => container.appendChild(card));
+            }
+
             let visiveis = 0;
+            cards.forEach(card => {
+                const id = parseInt(card.getAttribute('data-id'));
+                const m = musicas.find(item => item.id === id);
+                const titulo = m.titulo.toLowerCase();
+                const artista = m.artista.toLowerCase();
+                const genero = m.genero;
 
-            document.querySelectorAll('.card-musica').forEach(card => {
-                const titulo = card.querySelector('.titulo').textContent.toLowerCase();
-                const artista = card.querySelector('.artista').textContent.toLowerCase();
-                const genero = card.getAttribute('data-genero');
+                const passaPesquisa = titulo.includes(termo) || artista.includes(termo);
+                let passaGenero = true;
 
-                if ((titulo.includes(termo) || artista.includes(termo)) && (generoSelecionado === 'todos' || genero === generoSelecionado)) {
-                    card.style.display = 'block'; visiveis++;
+                if (generoSelecionado === 'top10') {
+                    const ordenados = [...musicas].sort((a, b) => calcularPontuacaoTop(b) - calcularPontuacaoTop(a));
+                    const top10Ids = ordenados.slice(0, 10).map(item => item.id);
+                    passaGenero = top10Ids.includes(m.id);
+                } else if (generoSelecionado === 'favoritos') {
+                    passaGenero = localStorage.getItem(`soundnews_liked_${m.id}`) === 'true';
+                } else if (generoSelecionado !== 'todos') {
+                    passaGenero = (genero === generoSelecionado);
+                }
+
+                if (passaPesquisa && passaGenero) {
+                    card.style.display = 'block';
+                    visiveis++;
                 } else {
                     card.style.display = 'none';
                 }
@@ -720,6 +983,7 @@
             let c = parseInt(el.textContent) + 1;
             el.textContent = c; 
             localStorage.setItem(`soundnews_dl_${id}`, c);
+            renderizarCatalogo();
         }
 
         function toggleLike(btn, id) {
@@ -731,10 +995,14 @@
             el.textContent = c;
             localStorage.setItem(`soundnews_liked_${id}`, !liked);
             localStorage.setItem(`soundnews_like_${id}`, c);
+            renderizarCatalogo();
         }
 
-        // Inicializar
+        // Inicialização
+        initTheme();
+        initVisualizer();
         carregarMusicas();
+        atualizarEstadoRede();
     </script>
 </body>
 </html>
