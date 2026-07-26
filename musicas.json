@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "titulo": "Pora pora",
+    "artista": "Cesarito",
+    "genero": "Pandza",
+    "capa": "capa.jpg",
+    "audio": "Cesarito-Porra%20pora.mp3",
+    "downloadNome": "Cesarito - Pora pora.mp3",
+    "downloadsIniciais": 142,
+    "likesIniciais": 35
+  },
+  {
+    "id": 2,
+    "titulo": "Rua da Dira",
+    "artista": "Ze Ngola",
+    "genero": "Marrabenta",
+    "capa": "capa.jpg",
+    "audio": "Ze%20Ngola.mp3",
+    "downloadNome": "Ze Ngola - Rua da dira.mp3",
+    "downloadsIniciais": 89,
+    "likesIniciais": 18
+  },
+  {
+    "id": 3,
+    "titulo": "Mamas_baybe",
+    "artista": "Nelson Tivane",
+    "genero": "HipHop",
+    "capa": "capa.jpg",
+    "audio": "%20Makhadzi %20feat%20  Nelson %20Tivane%20 - %20Mamas baby.mp3",
+    "downloadNome": "Nelson Tivane.mp3",
+    "downloadsIniciais": 89,
+    "likesIniciais": 18
+  },
+  {
+    "id": 4,
+    "titulo": "Diarreia no chapa",
+    "artista": "Mc Mastoni",
+    "genero": "HipHop",
+    "capa": "capa.jpg",
+    "audio": "Mc Mastoni-Diarreia no Chapa.mp3",
+    "downloadNome": "Mc Mastoni - Diarreia no Chapa.mp3",
+    "downloadsIniciais": 0,
+    "likesIniciais": 0
+  },
+  {
+    "id": 5,
+    "titulo": "Anile Noxe",
+    "artista": "Boti Israel",
+    "genero": "Marabemta",
+    "capa": "capa.jpg",
+    "audio": "Boti Israel-Aneli Nexe.mp3",
+    "downloadNome": "Boti Israel - Aneli Nexe.mp3",
+    "downloadsIniciais": 0,
+    "likesIniciais": 0
+  }
+ 
+]
