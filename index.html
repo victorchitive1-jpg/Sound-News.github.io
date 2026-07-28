@@ -182,6 +182,16 @@
             display: inline-block;
         }
 
+        .fonte-tag {
+            font-size: 0.65rem;
+            background-color: #555;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 15px;
+            margin-left: 5px;
+            font-weight: 500;
+        }
+
         .btn-play-item {
             color: var(--accent-color);
             font-size: 1.2rem;
@@ -399,6 +409,31 @@
             margin-bottom: 15px;
             opacity: 0.5;
         }
+
+        .soundcloud-embed {
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .badge-source {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 5px;
+            font-weight: 600;
+        }
+
+        .badge-soundcloud {
+            background-color: #ff7700;
+            color: white;
+        }
+
+        .badge-bunnycdn {
+            background-color: #ff6b35;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -476,7 +511,7 @@
         let indexAtual = -1;
         let isPlaying = false;
         let isShuffle = false;
-        let repeatMode = 0; // 0: sem repetição, 1: repetir tudo, 2: repetir uma
+        let repeatMode = 0;
         let isDraggingProgress = false;
 
         // Elementos do DOM
@@ -507,7 +542,7 @@
             }
         }
 
-        // Renderizar Lista
+        // Renderizar Lista com suporte para SoundCloud e Bunny CDN
         function renderizarLista(lista) {
             containerLista.innerHTML = '';
             if (lista.length === 0) {
@@ -518,12 +553,22 @@
             lista.forEach((musica, index) => {
                 const card = document.createElement('div');
                 card.className = `card-musica ${index === indexAtual && listaExibida === lista ? 'tocando' : ''}`;
+                
+                // Determinar a fonte (SoundCloud, Bunny CDN ou URL direta)
+                let fonteBadge = '';
+                if (musica.soundcloud_id) {
+                    fonteBadge = '<span class="badge-source badge-soundcloud">SoundCloud</span>';
+                } else if (musica.bunnycdn_url) {
+                    fonteBadge = '<span class="badge-source badge-bunnycdn">Bunny CDN</span>';
+                }
+
                 card.onclick = () => selecionarMusica(index);
                 card.innerHTML = `
                     <div class="info-musica">
                         <h4 class="titulo-musica">
                             ${musica.titulo}
                             <span class="genero-tag">${musica.genero}</span>
+                            ${fonteBadge}
                         </h4>
                         <p><i class="fas fa-user-music"></i> ${musica.artista}</p>
                     </div>
@@ -563,7 +608,7 @@
             }
         }
 
-        // Selecionar e Tocar
+        // Selecionar e Tocar com suporte para múltiplas fontes
         function selecionarMusica(index) {
             indexAtual = index;
             const musica = listaExibida[indexAtual];
@@ -572,7 +617,17 @@
             playerArtista.innerText = musica.artista;
             playerGenero.innerText = musica.genero;
 
-            audio.src = musica.audio;
+            // Prioridade: Bunny CDN > SoundCloud > URL direta
+            if (musica.bunnycdn_url) {
+                audio.src = musica.bunnycdn_url;
+            } else if (musica.soundcloud_id) {
+                // Para SoundCloud, usar API embarcada (se configurado)
+                console.log("SoundCloud ID:", musica.soundcloud_id);
+                audio.src = `https://soundcloud.com/${musica.soundcloud_id}`;
+            } else if (musica.audio) {
+                audio.src = musica.audio;
+            }
+
             audio.play();
             isPlaying = true;
 
@@ -622,7 +677,6 @@
 
             if (direcao === 1) {
                 if (repeatMode === 2) {
-                    // Repetir uma música
                     audio.currentTime = 0;
                     audio.play();
                 } else if (isShuffle) {
