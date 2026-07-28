@@ -4,6 +4,21 @@ O **Sound News** é um aplicativo web progressivo (PWA) de streaming de áudio, 
 
 ---
 
+## 👨‍💻 Desenvolvedor & Contactos
+
+Este projeto foi idealizado e desenvolvido por:
+
+* **Desenvolvedor:** **Victor Inora Chitive**
+* **Função:** Creator & Lead Developer
+* **Plataforma:** Sound News App
+
+### 📞 Contactos Directos
+* **📱 WhatsApp:** [+258 844559502](https://wa.me/258844559502)
+* **📞 Chamadas:** +258 878929868
+* **✉️ E-mail:** [victorchitive1@gmail.com](mailto:victorchitive1@gmail.com)
+
+---
+
 ## 🚀 Funcionalidades Principais
 
 * 📻 **Rádio Ao Vivo:** Transmissão interativa em tempo real integrada.
