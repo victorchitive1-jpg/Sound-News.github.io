@@ -96,10 +96,6 @@
             gap: 5px;
         }
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
         label {
             font-size: 0.85rem;
             color: var(--secondary-color);
@@ -153,7 +149,7 @@
         /* Área do JSON */
         textarea {
             width: 100%;
-            height: 250px;
+            height: 280px;
             background-color: #090a10;
             color: #1db954;
             border: 1px solid #32374d;
@@ -223,28 +219,48 @@
             
             <div class="form-grid">
                 <div class="form-group">
+                    <label for="id">ID da Música *</label>
+                    <input type="number" id="id" placeholder="Ex: 1, 2, 3...">
+                </div>
+
+                <div class="form-group">
                     <label for="titulo">Título da Música *</label>
-                    <input type="text" id="titulo" placeholder="Ex: Minha Música">
+                    <input type="text" id="titulo" placeholder="Ex: Mamas Baby">
                 </div>
 
                 <div class="form-group">
                     <label for="artista">Artista / Cantor *</label>
-                    <input type="text" id="artista" placeholder="Ex: Nome do Artista">
+                    <input type="text" id="artista" placeholder="Ex: Nelson Tivane">
                 </div>
 
                 <div class="form-group">
                     <label for="genero">Gênero Musical</label>
-                    <input type="text" id="genero" placeholder="Ex: Afrobeats, Kizomba, Rap">
+                    <input type="text" id="genero" placeholder="Ex: Amapiano, Kizomba">
                 </div>
 
                 <div class="form-group">
-                    <label for="audio">Arquivo de Áudio (.mp3 ou Link) *</label>
-                    <input type="text" id="audio" placeholder="Ex: musica.mp3 ou https://...">
+                    <label for="capa">Imagem da Capa</label>
+                    <input type="text" id="capa" placeholder="Ex: capa.jpg">
                 </div>
 
-                <div class="form-group full-width">
-                    <label for="capa">Caminho da Imagem da Capa (Opcional)</label>
-                    <input type="text" id="capa" placeholder="Ex: capa.jpg (Padrão se vazio)">
+                <div class="form-group">
+                    <label for="audio">Arquivo de Áudio (.mp3) *</label>
+                    <input type="text" id="audio" placeholder="Ex: musica.mp3">
+                </div>
+
+                <div class="form-group">
+                    <label for="downloadNome">Nome do Ficheiro para Download</label>
+                    <input type="text" id="downloadNome" placeholder="Ex: Nelson Tivane - Mamas baby.mp3">
+                </div>
+
+                <div class="form-group">
+                    <label for="downloadsIniciais">Downloads Iniciais</label>
+                    <input type="number" id="downloadsIniciais" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="likesIniciais">Likes Iniciais</label>
+                    <input type="number" id="likesIniciais" value="0">
                 </div>
             </div>
 
@@ -275,30 +291,62 @@
 
     <script>
         let listaMusicas = [];
+        let proximoId = 1;
+
+        // Auto-preenche o ID inicial
+        document.getElementById('id').value = proximoId;
+
+        // Auto-preenche o campo 'downloadNome' conforme o usuário digita
+        document.getElementById('artista').addEventListener('input', preencherDownloadNome);
+        document.getElementById('titulo').addEventListener('input', preencherDownloadNome);
+
+        function preencherDownloadNome() {
+            const artista = document.getElementById('artista').value.trim();
+            const titulo = document.getElementById('titulo').value.trim();
+            const campoDownload = document.getElementById('downloadNome');
+            
+            // Só altera automaticamente se o usuário não tiver escrito algo manualmente diferente
+            if (artista && titulo) {
+                campoDownload.value = `${artista} - ${titulo}.mp3`;
+            }
+        }
 
         function adicionarMusica() {
+            const idInput = document.getElementById('id').value;
             const titulo = document.getElementById('titulo').value.trim();
             const artista = document.getElementById('artista').value.trim();
             const genero = document.getElementById('genero').value.trim();
-            const audio = document.getElementById('audio').value.trim();
             let capa = document.getElementById('capa').value.trim();
+            const audio = document.getElementById('audio').value.trim();
+            let downloadNome = document.getElementById('downloadNome').value.trim();
+            const downloadsIniciais = parseInt(document.getElementById('downloadsIniciais').value) || 0;
+            const likesIniciais = parseInt(document.getElementById('likesIniciais').value) || 0;
 
-            if (!titulo || !artista || !audio) {
-                alert("Por favor, preencha os campos obrigatórios: Título, Artista e Arquivo de Áudio!");
+            if (!idInput || !titulo || !artista || !audio) {
+                alert("Por favor, preencha os campos obrigatórios: ID, Título, Artista e Arquivo de Áudio!");
                 return;
             }
 
             if (!capa) capa = 'capa.jpg';
+            if (!downloadNome) downloadNome = `${artista} - ${titulo}.mp3`;
 
             const novaMusica = {
+                id: parseInt(idInput),
                 titulo: titulo,
                 artista: artista,
                 genero: genero || 'Single',
+                capa: capa,
                 audio: audio,
-                capa: capa
+                downloadNome: downloadNome,
+                downloadsIniciais: downloadsIniciais,
+                likesIniciais: likesIniciais
             };
 
             listaMusicas.push(novaMusica);
+            
+            // Incrementa sugestão do próximo ID
+            proximoId = parseInt(idInput) + 1;
+
             atualizarTela();
             limparFormulario();
         }
@@ -311,23 +359,27 @@
         function limparTudo() {
             if (confirm("Deseja realmente limpar toda a lista?")) {
                 listaMusicas = [];
+                proximoId = 1;
                 atualizarTela();
+                document.getElementById('id').value = proximoId;
             }
         }
 
         function limparFormulario() {
+            document.getElementById('id').value = proximoId;
             document.getElementById('titulo').value = '';
             document.getElementById('artista').value = '';
             document.getElementById('genero').value = '';
-            document.getElementById('audio').value = '';
             document.getElementById('capa').value = '';
+            document.getElementById('audio').value = '';
+            document.getElementById('downloadNome').value = '';
+            document.getElementById('downloadsIniciais').value = '0';
+            document.getElementById('likesIniciais').value = '0';
         }
 
         function atualizarTela() {
-            // Atualiza contagem
             document.getElementById('total-count').innerText = listaMusicas.length;
 
-            // Atualiza lista visual
             const preview = document.getElementById('lista-preview');
             preview.innerHTML = '';
 
@@ -339,7 +391,7 @@
                     item.className = 'item-lista';
                     item.innerHTML = `
                         <div>
-                            <strong>${i + 1}. ${m.titulo}</strong> - ${m.artista} 
+                            <strong>#${m.id} - ${m.titulo}</strong> (${m.artista}) 
                             <span style="color: var(--accent-color); font-size: 0.8rem;">[${m.genero}]</span>
                         </div>
                         <button class="btn-remover" onclick="removerMusica(${i})" title="Remover">❌</button>
@@ -348,7 +400,7 @@
                 });
             }
 
-            // Atualiza o Textarea com o JSON formatado
+            // Exibe o JSON perfeitamente formatado
             document.getElementById('json-output').value = JSON.stringify(listaMusicas, null, 4);
         }
 
@@ -361,16 +413,15 @@
             }
 
             jsonTextarea.select();
-            jsonTextarea.setSelectionRange(0, 99999); // Para telas móbiles
+            jsonTextarea.setSelectionRange(0, 99999);
 
             navigator.clipboard.writeText(jsonTextarea.value).then(() => {
-                alert("Código JSON copiado com sucesso! Agora basta colar no seu arquivo musicas.json");
+                alert("Código JSON copiado com sucesso! Cole no arquivo musicas.json");
             }).catch(err => {
-                alert("Erro ao copiar. Tente selecionar o texto e copiar manualmente.");
+                alert("Erro ao copiar automaticamente. Selecione o texto e copie com Ctrl+C.");
             });
         }
 
-        // Inicializa a tela com estado limpo
         atualizarTela();
     </script>
 </body>
