@@ -25,7 +25,7 @@
         body {
             background-color: var(--bg-color);
             color: var(--primary-color);
-            padding-bottom: 110px;
+            padding-bottom: 120px;
         }
 
         /* Banner de Notificação de Atualização */
@@ -82,6 +82,17 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        /* Badge de Versão no Topo */
+        .version-badge {
+            font-size: 0.7rem;
+            background-color: #232736;
+            color: var(--secondary-color);
+            border: 1px solid #32374d;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: normal;
         }
 
         /* Botão Rádio */
@@ -293,6 +304,14 @@
             color: var(--accent-color);
         }
 
+        /* Rodapé com Versão */
+        footer {
+            text-align: center;
+            padding: 25px 15px 10px 15px;
+            color: var(--secondary-color);
+            font-size: 0.8rem;
+        }
+
         /* Mini Player */
         .mini-player {
             position: fixed;
@@ -378,7 +397,7 @@
     <header>
         <div class="header-top">
             <div class="logo-area">
-                <h1>🎵 Sound News</h1>
+                <h1>🎵 Sound News <span class="version-badge">v2.0</span></h1>
             </div>
             <button class="btn-radio-icon" id="btn-radio" onclick="toggleRadio()" title="Ligar/Desligar Rádio Sound News">📻</button>
         </div>
@@ -407,6 +426,11 @@
         <h3 class="section-title" id="titulo-resultados">Músicas Disponíveis</h3>
         <div class="lista-musicas" id="lista-musicas"></div>
     </div>
+
+    <!-- Rodapé exibindo a Versão -->
+    <footer>
+        <p>Sound News App &copy; 2026 • Versão <strong style="color: var(--accent-color);">v2.0</strong></p>
+    </footer>
 
     <!-- Leitores de Áudio -->
     <audio id="audio-player"></audio>
@@ -449,14 +473,13 @@
         const btnPlay = document.getElementById('btn-play');
         const btnDownloadPlayer = document.getElementById('btn-download-player');
 
-        // Registro e monitoramento do Service Worker para Notificação de Atualizações
+        // Registro do Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js').then(reg => {
                 reg.addEventListener('updatefound', () => {
                     newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            // Mostra a barra superior de atualização
                             document.getElementById('update-banner').style.display = 'flex';
                         }
                     });
@@ -483,7 +506,6 @@
             window.location.href = "admin.html";
         }
 
-        // Alternar Rádio
         function toggleRadio() {
             if (isRadioPlaying) {
                 radioAudio.pause();
@@ -512,7 +534,6 @@
             }
         }
 
-        // Carregar do musicas.json
         async function carregarMusicas() {
             try {
                 const res = await fetch('musicas.json');
