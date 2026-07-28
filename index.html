@@ -28,6 +28,40 @@
             padding-bottom: 110px;
         }
 
+        /* Banner de Notificação de Atualização */
+        .update-banner {
+            display: none;
+            background-color: var(--accent-color);
+            color: #000;
+            padding: 10px 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .update-banner button {
+            background-color: #000;
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .update-banner button:hover {
+            transform: scale(1.05);
+        }
+
         header {
             padding: 20px 15px;
             background-color: var(--card-bg);
@@ -335,6 +369,12 @@
 </head>
 <body>
 
+    <!-- Barra de Notificação de Nova Versão -->
+    <div id="update-banner" class="update-banner">
+        <span>🚀 Nova atualização do app disponível!</span>
+        <button id="btn-update" onclick="atualizarApp()">Atualizar Agora</button>
+    </div>
+
     <header>
         <div class="header-top">
             <div class="logo-area">
@@ -400,6 +440,7 @@
         let isShuffle = false;
         let isRepeat = false;
         let isRadioPlaying = false;
+        let newWorker;
 
         const audio = document.getElementById('audio-player');
         const radioAudio = document.getElementById('radio-player');
@@ -408,7 +449,36 @@
         const btnPlay = document.getElementById('btn-play');
         const btnDownloadPlayer = document.getElementById('btn-download-player');
 
-        // Abre a página admin.html diretamente ao clicar no botão
+        // Registro e monitoramento do Service Worker para Notificação de Atualizações
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Mostra a barra superior de atualização
+                            document.getElementById('update-banner').style.display = 'flex';
+                        }
+                    });
+                });
+            });
+
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                window.location.reload();
+                refreshing = true;
+            });
+        }
+
+        function atualizarApp() {
+            if (newWorker) {
+                newWorker.postMessage({ action: 'skipWaiting' });
+            } else {
+                window.location.reload();
+            }
+        }
+
         function abrirAdmin() {
             window.location.href = "admin.html";
         }
@@ -450,7 +520,6 @@
                 listaExibida = [...musicas];
                 renderizarLista(listaExibida);
 
-                // Define a primeira música como destaque na Capa
                 if (musicas.length > 0) {
                     atualizarCapa(musicas[0]);
                 }
