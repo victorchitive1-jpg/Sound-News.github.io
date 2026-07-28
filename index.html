@@ -12,6 +12,7 @@
             --secondary-color: #b3b3b3;
             --accent-color: #1db954;
             --player-bg: #181818;
+            --radio-active: #ff4757;
         }
 
         * {
@@ -29,16 +30,64 @@
 
         header {
             padding: 20px;
-            text-align: center;
             background-color: var(--card-bg);
             border-bottom: 1px solid #282828;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Botão do Ícone da Rádio */
+        .btn-radio-icon {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #fff;
+        }
+
+        .btn-radio-icon:hover {
+            transform: scale(1.08);
+            border-color: var(--accent-color);
+        }
+
+        /* Animação quando a rádio está AOVIVO */
+        .btn-radio-icon.aovivo {
+            background-color: var(--radio-active);
+            border-color: var(--radio-active);
+            box-shadow: 0 0 12px rgba(255, 71, 87, 0.6);
+            animation: pulseira 1.5s infinite;
+        }
+
+        @keyframes pulseira {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+            100% { transform: scale(1); }
         }
 
         .search-box {
             display: flex;
             justify-content: center;
             gap: 10px;
-            max-width: 500px;
+            max-width: 800px;
             margin: 15px auto 0;
         }
 
@@ -181,7 +230,14 @@
 <body>
 
     <header>
-        <h1>🎵 Sound News</h1>
+        <div class="header-top">
+            <div class="logo-area">
+                <h1>🎵 Sound News</h1>
+            </div>
+            <!-- Ícone Clicável da Rádio (Sem texto) -->
+            <button class="btn-radio-icon" id="btn-radio" onclick="toggleRadio()" title="Ligar/Desligar Rádio Sound News">📻</button>
+        </div>
+
         <div class="search-box">
             <input type="text" id="input-busca" placeholder="Pesquisar artista, género..." onkeyup="tratarEnter(event)">
             <button onclick="executarPesquisa()">Buscar</button>
@@ -193,7 +249,10 @@
         <div class="lista-musicas" id="lista-musicas"></div>
     </div>
 
+    <!-- Leitor de Áudio Principal -->
     <audio id="audio-player"></audio>
+    <!-- Stream de Áudio da Rádio -->
+    <audio id="radio-player" src="https://stream.zeno.fm/f3wvbbqmdg8uv"></audio>
 
     <!-- Mini Player -->
     <div class="mini-player">
@@ -208,7 +267,6 @@
             <button class="btn-controle btn-play" id="btn-play" onclick="togglePlay()">▶️</button>
             <button class="btn-controle" onclick="mudarMusica(1)">⏭️</button>
             <button class="btn-controle" id="btn-repeat" onclick="toggleRepeat()">🔁</button>
-            <!-- Botão de Download no Player -->
             <a class="btn-acao" id="btn-download-player" href="#" download title="Baixar Música" style="display: none;">⬇️</a>
         </div>
     </div>
@@ -220,13 +278,47 @@
         let isPlaying = false;
         let isShuffle = false;
         let isRepeat = false;
+        let isRadioPlaying = false;
 
         const audio = document.getElementById('audio-player');
+        const radioAudio = document.getElementById('radio-player');
+        const btnRadio = document.getElementById('btn-radio');
         const containerLista = document.getElementById('lista-musicas');
         const btnPlay = document.getElementById('btn-play');
         const btnDownloadPlayer = document.getElementById('btn-download-player');
 
-        // Carregar do musicas.json
+        // Alternar Rádio (Ligar / Desligar)
+        function toggleRadio() {
+            if (isRadioPlaying) {
+                // Desligar Rádio
+                radioAudio.pause();
+                isRadioPlaying = false;
+                btnRadio.classList.remove('aovivo');
+                btnRadio.innerText = '📻';
+                
+                document.getElementById('player-titulo').innerText = "Selecione uma música";
+                document.getElementById('player-artista').innerText = "-";
+            } else {
+                // Parar leitor normal se estiver tocando
+                if (isPlaying) {
+                    audio.pause();
+                    isPlaying = false;
+                    btnPlay.innerText = '▶️';
+                }
+
+                // Ligar Rádio
+                radioAudio.play().catch(e => console.log("Erro ao tocar rádio:", e));
+                isRadioPlaying = true;
+                btnRadio.classList.add('aovivo');
+                btnRadio.innerText = '📻';
+
+                document.getElementById('player-titulo').innerText = "Rádio Sound News FM";
+                document.getElementById('player-artista').innerText = "Transmissão AO VIVO";
+                btnDownloadPlayer.style.display = 'none';
+            }
+        }
+
+        // Carregar músicas do JSON
         async function carregarMusicas() {
             try {
                 const res = await fetch('musicas.json');
@@ -242,7 +334,7 @@
             containerLista.innerHTML = '';
             lista.forEach((musica, index) => {
                 const card = document.createElement('div');
-                card.className = `card-musica ${index === indexAtual ? 'tocando' : ''}`;
+                card.className = `card-musica ${index === indexAtual && !isRadioPlaying ? 'tocando' : ''}`;
                 card.innerHTML = `
                     <div class="info-musica" onclick="selecionarMusica(${index})">
                         <h4>${musica.titulo} <span class="genero-tag">${musica.genero || 'Single'}</span></h4>
@@ -250,7 +342,6 @@
                     </div>
                     <div class="acoes-card">
                         <button class="btn-acao" onclick="selecionarMusica(${index})" title="Ouvir">▶</button>
-                        <!-- Botão de Download na Lista -->
                         <a class="btn-acao" href="${musica.audio}" download="${musica.downloadNome || musica.titulo + '.mp3'}" title="Baixar">⬇️</a>
                     </div>
                 `;
@@ -259,13 +350,17 @@
         }
 
         function selecionarMusica(index) {
+            // Se a rádio estiver ligada, desliga
+            if (isRadioPlaying) {
+                toggleRadio();
+            }
+
             indexAtual = index;
             const m = listaExibida[indexAtual];
 
             document.getElementById('player-titulo').innerText = m.titulo;
             document.getElementById('player-artista').innerText = m.artista;
 
-            // Configura o áudio e o botão de download no leitor
             audio.src = m.audio;
             audio.play();
             isPlaying = true;
@@ -279,6 +374,11 @@
         }
 
         function togglePlay() {
+            if (isRadioPlaying) {
+                toggleRadio();
+                return;
+            }
+
             if (indexAtual === -1 && listaExibida.length > 0) {
                 selecionarMusica(0);
                 return;
@@ -304,7 +404,7 @@
         }
 
         function mudarMusica(dir) {
-            if (listaExibida.length === 0) return;
+            if (listaExibida.length === 0 || isRadioPlaying) return;
             if (isRepeat && dir === 1) {
                 indexAtual = indexAtual;
             } else if (isShuffle && dir === 1) {
