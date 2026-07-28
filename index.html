@@ -627,20 +627,30 @@
             }
         }
 
-        async function carregarMusicas() {
-            try {
-                const res = await fetch('musicas.json');
-                musicas = await res.json();
-                listaExibida = [...musicas];
-                renderizarLista(listaExibida);
-
-                if (musicas.length > 0) {
-                    atualizarCapa(musicas[0]);
-                }
-            } catch (err) {
-                console.error("Erro ao carregar musicas.json:", err);
-            }
+       // CÓDIGO NOVO (Coloque este no lugar)
+async function carregarMusicas() {
+    // 1. Verifica se existem músicas salvas no LocalStorage (alteradas pelo admin)
+    const localData = localStorage.getItem('sound_news_musicas');
+    
+    if (localData) {
+        // Se encontrar, usa a lista atualizada do Admin
+        musicas = JSON.parse(localData);
+        listaExibida = [...musicas];
+        renderizarLista(listaExibida);
+        if (musicas.length > 0) atualizarCapa(musicas[0]);
+    } else {
+        // 2. Se não houver nada no LocalStorage, carrega o arquivo musicas.json padrão
+        try {
+            const res = await fetch('musicas.json');
+            musicas = await res.json();
+            listaExibida = [...musicas];
+            renderizarLista(listaExibida);
+            if (musicas.length > 0) atualizarCapa(musicas[0]);
+        } catch (err) {
+            console.error("Erro ao carregar musicas.json:", err);
         }
+    }
+}
 
         function atualizarCapa(m) {
             const fotoCapa = m.capa || 'capa.jpg';
