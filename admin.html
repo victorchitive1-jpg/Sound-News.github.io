@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sound News - Painel de Gestão (Admin)</title>
+    <title>Painel de Gestão - Sound News</title>
     <style>
         :root {
             --bg-color: #0f111a;
@@ -11,6 +11,8 @@
             --primary-color: #ffffff;
             --secondary-color: #a0a5b5;
             --accent-color: #1db954;
+            --danger-color: #ff4757;
+            --warning-color: #ffa502;
             --border-color: #25293a;
         }
 
@@ -27,243 +29,396 @@
             padding: 20px;
         }
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background-color: var(--card-bg);
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-        }
-
         .header-admin {
+            max-width: 1000px;
+            margin: 0 auto 25px auto;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 25px;
+            align-items: center;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
         }
 
         .btn-voltar {
-            background: #232736;
-            color: var(--secondary-color);
+            background-color: var(--card-bg);
+            color: var(--primary-color);
             border: 1px solid var(--border-color);
             padding: 8px 16px;
             border-radius: 20px;
+            cursor: pointer;
             text-decoration: none;
-            font-size: 0.85rem;
-            transition: 0.2s;
-        }
-
-        .btn-voltar:hover {
-            color: #fff;
-            border-color: var(--accent-color);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--secondary-color);
             font-size: 0.9rem;
         }
 
-        input, select {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        /* Área de Drag & Drop */
+        .drop-zone {
+            border: 2px dashed var(--accent-color);
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        .drop-zone.hover {
+            background-color: #1e2433;
+            border-color: #20e066;
+        }
+
+        .drop-zone p {
+            color: var(--secondary-color);
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Formulário Manual */
+        .card-painel {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-painel h3 {
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+        }
+
+        .input-group input {
+            padding: 10px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
             background-color: #0f111a;
             color: #fff;
             outline: none;
-            font-size: 0.95rem;
         }
 
-        input:focus {
-            border-color: var(--accent-color);
-        }
-
-        .btn-gerar {
-            width: 100%;
-            padding: 12px;
+        /* Barra de Ações em Massa */
+        .acoes-massa {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            padding: 15px 20px;
             border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
             border: none;
-            background-color: var(--accent-color);
-            color: #000;
             font-weight: bold;
-            font-size: 1rem;
             cursor: pointer;
-            margin-top: 10px;
             transition: opacity 0.2s;
         }
 
-        .btn-gerar:hover {
-            opacity: 0.9;
+        .btn:hover { opacity: 0.85; }
+        .btn-success { background-color: var(--accent-color); color: #000; }
+        .btn-danger { background-color: var(--danger-color); color: #fff; }
+        .btn-warning { background-color: var(--warning-color); color: #000; }
+
+        /* Tabela de Gerenciamento */
+        .tabela-container {
+            overflow-x: auto;
         }
 
-        .resultado-area {
-            margin-top: 25px;
-            display: none;
-        }
-
-        textarea {
+        table {
             width: 100%;
-            height: 180px;
-            background-color: #0f111a;
-            color: var(--accent-color);
-            border: 1px solid var(--border-color);
+            border-collapse: collapse;
+            background-color: var(--card-bg);
             border-radius: 8px;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            resize: none;
-            outline: none;
+            overflow: hidden;
         }
 
-        .btn-copiar {
-            background-color: #232736;
-            color: #fff;
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 8px;
-            font-weight: bold;
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        .btn-copiar:hover {
-            border-color: var(--accent-color);
-        }
-
-        .passos-instrucao {
-            margin-top: 20px;
-            background: #202433;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+        th {
+            background-color: #12141d;
             color: var(--secondary-color);
-            line-height: 1.5;
+            font-size: 0.85rem;
+            text-transform: uppercase;
         }
 
-        .passos-instrucao ol {
-            margin-left: 20px;
-            margin-top: 5px;
+        td input[type="text"] {
+            width: 100%;
+            padding: 6px;
+            background: #0f111a;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+        }
+
+        .checkbox-cell {
+            width: 40px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
+    <div class="header-admin">
+        <h2>⚙️ Gestão de Músicas (Sound News)</h2>
+        <a href="index.html" class="btn-voltar">⬅️ Voltar ao App</a>
+    </div>
+
     <div class="container">
-        <div class="header-admin">
-            <h2>⚙️ Painel de Gestão (Admin)</h2>
-            <a href="index.html" class="btn-voltar">⬅️ Voltar ao Site</a>
+
+        <!-- 1. Drag and Drop para Upload Rápido -->
+        <div class="drop-zone" id="drop-zone">
+            📁 <strong>Arraste e solte os seus ficheiros .mp3 ou Imagens de Capa aqui</strong>
+            <p>ou clique para selecionar do computador</p>
+            <input type="file" id="file-input" multiple accept="audio/mp3,image/*" style="display: none;">
         </div>
 
-        <h3>Adicionar Nova Música</h3>
-        <p style="color: var(--secondary-color); font-size: 0.85rem; margin-bottom: 20px;">
-            Preencha os campos abaixo para gerar a estrutura de dados pronta a adicionar ao teu <b>musicas.json</b>.
-        </p>
+        <!-- 2. Formulário Adicionar / Editar Manual -->
+        <div class="card-painel">
+            <h3>➕ Adicionar Nova Faixa</h3>
+            <form id="form-musica" onsubmit="salvarMusica(event)">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Título da Música</label>
+                        <input type="text" id="add-titulo" placeholder="Ex: Minha Música" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Artista / Grupo</label>
+                        <input type="text" id="add-artista" placeholder="Ex: Artista Moz" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Género</label>
+                        <input type="text" id="add-genero" placeholder="Ex: Marrabenta / Pandza">
+                    </div>
+                    <div class="input-group">
+                        <label>Caminho do Áudio (.mp3)</label>
+                        <input type="text" id="add-audio" placeholder="musicas/faixa.mp3" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Caminho da Capa (Imagem)</label>
+                        <input type="text" id="add-capa" placeholder="capa.jpg">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Guardar Música</button>
+            </form>
+        </div>
 
-        <form id="form-musica">
-            <div class="form-group">
-                <label>ID da Música (Número seguinte ao último do json):</label>
-                <input type="number" id="idMusica" placeholder="Ex: 25" required>
+        <!-- 3. Edição e Exclusão em Massa -->
+        <div>
+            <div class="acoes-massa">
+                <div>
+                    <input type="checkbox" id="select-all" onclick="toggleSelecionarTodos(this)">
+                    <label for="select-all" style="margin-left: 8px; font-weight: bold;">Selecionar Todos</label>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-warning" onclick="exportarJSON()">📥 Baixar musicas.json</button>
+                    <button class="btn btn-danger" onclick="excluirSelecionados()">🗑️ Eliminar Selecionados</button>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Título da Música:</label>
-                <input type="text" id="titulo" placeholder="Ex: Amor de Mãe" required>
-            </div>
-
-            <div class="form-group">
-                <label>Nome do Artista:</label>
-                <input type="text" id="artista" placeholder="Ex: Zé Ngola" required>
-            </div>
-
-            <div class="form-group">
-                <label>Género Musical:</label>
-                <select id="genero">
-                    <option value="Marrabenta">Marrabenta</option>
-                    <option value="Pandza">Pandza</option>
-                    <option value="HipHop">HipHop</option>
-                    <option value="Kizomba">Kizomba</option>
-                    <option value="Afro House">Afro House</option>
-                    <option value="Gospel">Gospel</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Nome EXATO do Ficheiro MP3 (como subiste no GitHub):</label>
-                <input type="text" id="audio" placeholder="Ex: Ze Ngola - Amor de Mae.mp3" required>
-            </div>
-
-            <div class="form-group">
-                <label>Ficheiro de Capa (Opcional):</label>
-                <input type="text" id="capa" value="capa.jpg">
-            </div>
-
-            <button type="button" class="btn-gerar" onclick="gerarJSON()">✨ Gerar Código JSON</button>
-        </form>
-
-        <div class="resultado-area" id="resultado-area">
-            <h4 style="margin-bottom: 8px;">Código Gerado:</h4>
-            <textarea id="json-output" readonly></textarea>
-            <button class="btn-copiar" onclick="copiarCodigo()">📋 Copiar Código</button>
-
-            <div class="passos-instrucao">
-                <strong>📌 Como publicar no site:</strong>
-                <ol>
-                    <li>Certifica-te de que já fizeste o upload do ficheiro <code>.mp3</code> no GitHub.</li>
-                    <li>Clica no botão <strong>Copiar Código</strong> acima.</li>
-                    <li>Abre o teu ficheiro <strong>musicas.json</strong> no GitHub e clica no ícone do lápis ✏️.</li>
-                    <li>Cola este código no final da lista (antes do último parêntesis reto <code>]</code>).</li>
-                    <li>Não te esqueças de colocar uma vírgula <code>,</code> após a música anterior!</li>
-                </ol>
+            <div class="tabela-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="checkbox-cell">#</th>
+                            <th>Título</th>
+                            <th>Artista</th>
+                            <th>Género</th>
+                            <th>Ficheiro Áudio</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-corpo">
+                        <!-- Linhas geradas via Javascript -->
+                    </tbody>
+                </table>
             </div>
         </div>
+
     </div>
 
     <script>
-        function gerarJSON() {
-            const id = parseInt(document.getElementById('idMusica').value);
-            const titulo = document.getElementById('titulo').value.trim();
-            const artista = document.getElementById('artista').value.trim();
-            const genero = document.getElementById('genero').value;
-            const audio = document.getElementById('audio').value.trim();
-            const capa = document.getElementById('capa').value.trim() || 'capa.jpg';
+        let musicas = [];
 
-            if (!id || !titulo || !artista || !audio) {
-                alert("Por favor, preencha todos os campos obrigatórios!");
+        // Carregar músicas (do localStorage ou do arquivo JSON inicial)
+        async function carregarMusicasAdmin() {
+            const localData = localStorage.getItem('sound_news_musicas');
+            if (localData) {
+                musicas = JSON.parse(localData);
+            } else {
+                try {
+                    const res = await fetch('musicas.json');
+                    musicas = await res.json();
+                    salvarNoLocalStorage();
+                } catch (e) {
+                    musicas = [];
+                }
+            }
+            renderizarTabela();
+        }
+
+        function salvarNoLocalStorage() {
+            localStorage.setItem('sound_news_musicas', JSON.stringify(musicas));
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela-corpo');
+            tbody.innerHTML = '';
+
+            musicas.forEach((m, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="checkbox-cell">
+                        <input type="checkbox" class="check-item" data-index="${index}">
+                    </td>
+                    <td><input type="text" value="${m.titulo}" onchange="atualizarCampo(${index}, 'titulo', this.value)"></td>
+                    <td><input type="text" value="${m.artista}" onchange="atualizarCampo(${index}, 'artista', this.value)"></td>
+                    <td><input type="text" value="${m.genero || ''}" onchange="atualizarCampo(${index}, 'genero', this.value)"></td>
+                    <td><input type="text" value="${m.audio}" onchange="atualizarCampo(${index}, 'audio', this.value)"></td>
+                    <td>
+                        <button class="btn btn-danger" style="padding: 4px 8px; font-size:0.8rem;" onclick="eliminarUnico(${index})">✕</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarCampo(index, campo, valor) {
+            musicas[index][campo] = valor;
+            salvarNoLocalStorage();
+        }
+
+        function salvarMusica(e) {
+            e.preventDefault();
+            const novaMusica = {
+                titulo: document.getElementById('add-titulo').value,
+                artista: document.getElementById('add-artista').value,
+                genero: document.getElementById('add-genero').value,
+                audio: document.getElementById('add-audio').value,
+                capa: document.getElementById('add-capa').value || 'capa.jpg'
+            };
+
+            musicas.push(novaMusica);
+            salvarNoLocalStorage();
+            renderizarTabela();
+            document.getElementById('form-musica').reset();
+            alert('Música adicionada com sucesso!');
+        }
+
+        function eliminarUnico(index) {
+            if (confirm('Tem certeza que deseja eliminar esta música?')) {
+                musicas.splice(index, 1);
+                salvarNoLocalStorage();
+                renderizarTabela();
+            }
+        }
+
+        function toggleSelecionarTodos(master) {
+            const checkboxes = document.querySelectorAll('.check-item');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        function excluirSelecionados() {
+            const checkboxes = document.querySelectorAll('.check-item:checked');
+            if (checkboxes.length === 0) {
+                alert('Nenhuma música selecionada!');
                 return;
             }
 
-            const novaMusica = {
-                "id": id,
-                "titulo": titulo,
-                "artista": artista,
-                "genero": genero,
-                "capa": capa,
-                "audio": audio,
-                "downloadNome": `${artista} - ${titulo}.mp3`,
-                "downloadsIniciais": 0,
-                "likesIniciais": 0
-            };
-
-            const jsonFormatado = JSON.stringify(novaMusica, null, 2);
-            document.getElementById('json-output').value = ",\n" + jsonFormatado;
-            document.getElementById('resultado-area').style.display = 'block';
+            if (confirm(`Deseja eliminar as ${checkboxes.length} músicas selecionadas?`)) {
+                const indicesParaRemover = Array.from(checkboxes).map(cb => parseInt(cb.dataset.index));
+                musicas = musicas.filter((_, idx) => !indicesParaRemover.includes(idx));
+                salvarNoLocalStorage();
+                renderizarTabela();
+                document.getElementById('select-all').checked = false;
+            }
         }
 
-        function copiarCodigo() {
-            const textarea = document.getElementById('json-output');
-            textarea.select();
-            document.execCommand('copy');
-            alert("Código copiado com sucesso! Agora cola no musicas.json no GitHub.");
+        // Exporta o ficheiro 'musicas.json' atualizado
+        function exportarJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(musicas, null, 4));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "musicas.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
         }
+
+        // Configuração da zona de Arrastar e Soltar (Drag & Drop)
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('hover');
+        });
+
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('hover'));
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('hover');
+            processarArquivos(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => processarArquivos(e.target.files));
+
+        function processarArquivos(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('audio/')) {
+                    // Extrai nome limpo do arquivo para o Título
+                    const nomeLimpo = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+                    musicas.push({
+                        titulo: nomeLimpo,
+                        artista: "Artista Desconhecido",
+                        genero: "Single",
+                        audio: `musicas/${file.name}`,
+                        capa: "capa.jpg"
+                    });
+                }
+            });
+            salvarNoLocalStorage();
+            renderizarTabela();
+            alert(`${files.length} ficheiro(s) processado(s) e adicionado(s) à lista!`);
+        }
+
+        carregarMusicasAdmin();
     </script>
 </body>
 </html>
