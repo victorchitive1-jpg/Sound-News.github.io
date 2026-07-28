@@ -761,8 +761,8 @@
             selecionarMusica(indexAtual);
         }
 
-        // ==========================================
-        // LÓGICA DE PESQUISA HÍBRIDA (LOCAL + WEB)
+   // ==========================================
+        // LÓGICA DE PESQUISA HÍBRIDA (LOCAL + WEB COM FALLBACK)
         // ==========================================
         inputBusca.addEventListener('input', (e) => {
             const termo = e.target.value.trim().toLowerCase();
@@ -788,7 +788,7 @@
                 listaExibida = locaisFiltradas;
                 renderizarLista(listaExibida);
             } else {
-                // 2. Se não encontrou localmente, busca na web via API após 400ms de pausa na digitação
+                // 2. Se não encontrou localmente, busca na web após 400ms de pausa na digitação
                 tempoEsperaBusca = setTimeout(() => {
                     buscarMusicasWeb(termo);
                 }, 400);
@@ -799,40 +799,83 @@
             tituloResultados.innerText = "Buscando músicas na web...";
             containerLista.innerHTML = '<p style="text-align:center; color: var(--secondary-color); padding: 20px;">🔎 Pesquisando na Web...</p>';
 
+            // TENTATIVA 1: Deezer via Proxy 1
             try {
                 const urlDeezer = `https://api.deezer.com/search?q=${encodeURIComponent(termo)}`;
-                const urlProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(urlDeezer)}`;
-
-                const res = await fetch(urlProxy);
+                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(urlDeezer)}`);
+                if (!res.ok) throw new Error("Proxy 1 falhou");
+                
                 const dataProxy = await res.json();
                 const data = JSON.parse(dataProxy.contents);
 
-                if (!data.data || data.data.length === 0) {
-                    tituloResultados.innerText = "Sem Resultados";
-                    containerLista.innerHTML = '<p style="text-align:center; color: var(--secondary-color); padding: 20px;">Nenhuma música encontrada localmente ou na web.</p>';
+                if (data.data && data.data.length > 0) {
+                    processarResultadosDeezer(data.data);
                     return;
                 }
-
-                // Mapeia o retorno da API para a estrutura aceita pelo app
-                const resultadosFormatados = data.data.map(item => ({
-                    id: `ext-${item.id}`,
-                    titulo: item.title_short || item.title,
-                    artista: item.artist.name,
-                    genero: 'Web Stream',
-                    capa: item.album.cover_medium || item.album.cover || 'capa.jpg',
-                    audio: item.preview, // Prévia MP3 da Deezer
-                    downloadNome: `${item.artist.name} - ${item.title}.mp3`
-                }));
-
-                tituloResultados.innerText = `Resultados da Web (${resultadosFormatados.length})`;
-                listaExibida = resultadosFormatados;
-                renderizarLista(listaExibida);
-
-            } catch (err) {
-                console.error("Erro na busca externa:", err);
-                tituloResultados.innerText = "Erro na Busca";
-                containerLista.innerHTML = '<p style="text-align:center; color: #ff5555; padding: 20px;">Falha ao conectar aos serviços da web.</p>';
+            } catch (err1) {
+                console.warn("Tentativa 1 falhou, tentando alternativa...", err1);
             }
+
+            // TENTATIVA 2: Deezer via Proxy 2
+            try {
+                const urlDeezer = `https://api.deezer.com/search?q=${encodeURIComponent(termo)}`;
+                const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(urlDeezer)}`);
+                if (!res.ok) throw new Error("Proxy 2 falhou");
+
+                const data = await res.json();
+                if (data.data && data.data.length > 0) {
+                    processarResultadosDeezer(data.data);
+                    return;
+                }
+            } catch (err2) {
+                console.warn("Tentativa 2 falhou, tentando iTunes...", err2);
+            }
+
+            // TENTATIVA 3: iTunes API (Direta, sem CORS)
+            try {
+                const urlItunes = `https://itunes.apple.com/search?term=${encodeURIComponent(termo)}&entity=song&limit=15`;
+                const res = await fetch(urlItunes);
+                if (!res.ok) throw new Error("iTunes falhou");
+
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    const resultadosFormatados = data.results.map(item => ({
+                        id: `itunes-${item.trackId}`,
+                        titulo: item.trackName,
+                        artista: item.artistName,
+                        genero: item.primaryGenreName || 'Apple Music',
+                        capa: item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb', '300x300bb') : 'capa.jpg',
+                        audio: item.previewUrl,
+                        downloadNome: `${item.artistName} - ${item.trackName}.mp3`
+                    }));
+
+                    tituloResultados.innerText = `Resultados da Web (${resultadosFormatados.length})`;
+                    listaExibida = resultadosFormatados;
+                    renderizarLista(listaExibida);
+                    return;
+                }
+            } catch (err3) {
+                console.error("Todas as APIs falharam:", err3);
+            }
+
+            tituloResultados.innerText = "Sem Resultados";
+            containerLista.innerHTML = '<p style="text-align:center; color: var(--secondary-color); padding: 20px;">Nenhuma música encontrada localmente ou na web.</p>';
+        }
+
+        function processarResultadosDeezer(itens) {
+            const resultadosFormatados = itens.map(item => ({
+                id: `ext-${item.id}`,
+                titulo: item.title_short || item.title,
+                artista: item.artist.name,
+                genero: 'Deezer Stream',
+                capa: item.album.cover_medium || item.album.cover || 'capa.jpg',
+                audio: item.preview,
+                downloadNome: `${item.artist.name} - ${item.title}.mp3`
+            }));
+
+            tituloResultados.innerText = `Resultados da Web (${resultadosFormatados.length})`;
+            listaExibida = resultadosFormatados;
+            renderizarLista(listaExibida);
         }
 
         function executarPesquisaManual() {
