@@ -213,12 +213,17 @@
 
         .search-box input {
             width: 100%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 20px;
             border: 1px solid #32374d;
             background-color: #0f111a;
             color: #fff;
             outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-color);
         }
 
         .search-box button {
@@ -226,7 +231,7 @@
             border-radius: 20px;
             border: none;
             background-color: var(--accent-color);
-            color: #fff;
+            color: #000;
             font-weight: bold;
             cursor: pointer;
         }
@@ -446,7 +451,7 @@
 </head>
 <body>
 
-    <!-- Aba/Banner Superior para Download do Aplicativo (PWA) -->
+    <!-- Banner Superior para Download do Aplicativo (PWA) -->
     <div id="pwa-install-banner" class="pwa-install-banner">
         <div class="pwa-install-content">
             <span>📱 Baixe o nosso App no seu telemóvel/computador!</span>
@@ -474,9 +479,10 @@
             <button class="btn-admin" onclick="abrirAdmin()">⚙️ Painel de Gestão (Admin)</button>
         </div>
 
+        <!-- Barra de Pesquisa Híbrida (Local + Web) -->
         <div class="search-box">
-            <input type="text" id="input-busca" placeholder="Pesquisar artista, género..." onkeyup="tratarEnter(event)">
-            <button onclick="executarPesquisa()">Buscar</button>
+            <input type="text" id="input-busca" placeholder="Pesquisar artista, título ou género (local ou na web)...">
+            <button onclick="executarPesquisaManual()">Buscar</button>
         </div>
     </header>
 
@@ -531,6 +537,7 @@
         let isShuffle = false;
         let isRepeat = false;
         let isRadioPlaying = false;
+        let tempoEsperaBusca = null;
         let newWorker;
         let deferredPrompt;
 
@@ -541,6 +548,8 @@
         const btnPlay = document.getElementById('btn-play');
         const btnDownloadPlayer = document.getElementById('btn-download-player');
         const pwaBanner = document.getElementById('pwa-install-banner');
+        const inputBusca = document.getElementById('input-busca');
+        const tituloResultados = document.getElementById('titulo-resultados');
 
         // Captura o evento de instalação do PWA
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -627,30 +636,26 @@
             }
         }
 
-       // CÓDIGO NOVO (Coloque este no lugar)
-async function carregarMusicas() {
-    // 1. Verifica se existem músicas salvas no LocalStorage (alteradas pelo admin)
-    const localData = localStorage.getItem('sound_news_musicas');
-    
-    if (localData) {
-        // Se encontrar, usa a lista atualizada do Admin
-        musicas = JSON.parse(localData);
-        listaExibida = [...musicas];
-        renderizarLista(listaExibida);
-        if (musicas.length > 0) atualizarCapa(musicas[0]);
-    } else {
-        // 2. Se não houver nada no LocalStorage, carrega o arquivo musicas.json padrão
-        try {
-            const res = await fetch('musicas.json');
-            musicas = await res.json();
-            listaExibida = [...musicas];
-            renderizarLista(listaExibida);
-            if (musicas.length > 0) atualizarCapa(musicas[0]);
-        } catch (err) {
-            console.error("Erro ao carregar musicas.json:", err);
+        async function carregarMusicas() {
+            const localData = localStorage.getItem('sound_news_musicas');
+            
+            if (localData) {
+                musicas = JSON.parse(localData);
+                listaExibida = [...musicas];
+                renderizarLista(listaExibida);
+                if (musicas.length > 0) atualizarCapa(musicas[0]);
+            } else {
+                try {
+                    const res = await fetch('musicas.json');
+                    musicas = await res.json();
+                    listaExibida = [...musicas];
+                    renderizarLista(listaExibida);
+                    if (musicas.length > 0) atualizarCapa(musicas[0]);
+                } catch (err) {
+                    console.error("Erro ao carregar musicas.json:", err);
+                }
+            }
         }
-    }
-}
 
         function atualizarCapa(m) {
             const fotoCapa = m.capa || 'capa.jpg';
@@ -662,13 +667,18 @@ async function carregarMusicas() {
 
         function renderizarLista(lista) {
             containerLista.innerHTML = '';
+            if (lista.length === 0) {
+                containerLista.innerHTML = '<p style="text-align:center; color: var(--secondary-color); padding: 20px;">Nenhuma música encontrada.</p>';
+                return;
+            }
+
             lista.forEach((musica, index) => {
                 const foto = musica.capa || 'capa.jpg';
                 const card = document.createElement('div');
                 card.className = `card-musica ${index === indexAtual && !isRadioPlaying ? 'tocando' : ''}`;
                 card.innerHTML = `
                     <div class="card-esquerda" onclick="selecionarMusica(${index})">
-                        <img src="${foto}" class="img-capa-thumb" alt="Capa">
+                        <img src="${foto}" class="img-capa-thumb" alt="${musica.titulo}">
                         <div>
                             <h4>${musica.titulo} <span class="genero-tag">${musica.genero || 'Single'}</span></h4>
                             <p style="color: var(--secondary-color); font-size: 0.85rem;">${musica.artista}</p>
@@ -751,18 +761,85 @@ async function carregarMusicas() {
             selecionarMusica(indexAtual);
         }
 
-        function executarPesquisa() {
-            const termo = document.getElementById('input-busca').value.toLowerCase();
-            listaExibida = musicas.filter(m => 
+        // ==========================================
+        // LÓGICA DE PESQUISA HÍBRIDA (LOCAL + WEB)
+        // ==========================================
+        inputBusca.addEventListener('input', (e) => {
+            const termo = e.target.value.trim().toLowerCase();
+            clearTimeout(tempoEsperaBusca);
+
+            // Se o campo estiver limpo ou curto, volta ao catálogo normal
+            if (termo.length < 2) {
+                tituloResultados.innerText = "Músicas Disponíveis";
+                listaExibida = [...musicas];
+                renderizarLista(listaExibida);
+                return;
+            }
+
+            // 1. Tenta buscar primeiro nas músicas locais / admin
+            const locaisFiltradas = musicas.filter(m => 
                 m.titulo.toLowerCase().includes(termo) || 
                 m.artista.toLowerCase().includes(termo) ||
                 (m.genero && m.genero.toLowerCase().includes(termo))
             );
-            renderizarLista(listaExibida);
+
+            if (locaisFiltradas.length > 0) {
+                tituloResultados.innerText = `Resultados Locais (${locaisFiltradas.length})`;
+                listaExibida = locaisFiltradas;
+                renderizarLista(listaExibida);
+            } else {
+                // 2. Se não encontrou localmente, busca na web via API após 400ms de pausa na digitação
+                tempoEsperaBusca = setTimeout(() => {
+                    buscarMusicasWeb(termo);
+                }, 400);
+            }
+        });
+
+        async function buscarMusicasWeb(termo) {
+            tituloResultados.innerText = "Buscando músicas na web...";
+            containerLista.innerHTML = '<p style="text-align:center; color: var(--secondary-color); padding: 20px;">🔎 Pesquisando na Web...</p>';
+
+            try {
+                const urlDeezer = `https://api.deezer.com/search?q=${encodeURIComponent(termo)}`;
+                const urlProxy = `https://api.allorigins.win/get?url=${encodeURIComponent(urlDeezer)}`;
+
+                const res = await fetch(urlProxy);
+                const dataProxy = await res.json();
+                const data = JSON.parse(dataProxy.contents);
+
+                if (!data.data || data.data.length === 0) {
+                    tituloResultados.innerText = "Sem Resultados";
+                    containerLista.innerHTML = '<p style="text-align:center; color: var(--secondary-color); padding: 20px;">Nenhuma música encontrada localmente ou na web.</p>';
+                    return;
+                }
+
+                // Mapeia o retorno da API para a estrutura aceita pelo app
+                const resultadosFormatados = data.data.map(item => ({
+                    id: `ext-${item.id}`,
+                    titulo: item.title_short || item.title,
+                    artista: item.artist.name,
+                    genero: 'Web Stream',
+                    capa: item.album.cover_medium || item.album.cover || 'capa.jpg',
+                    audio: item.preview, // Prévia MP3 da Deezer
+                    downloadNome: `${item.artist.name} - ${item.title}.mp3`
+                }));
+
+                tituloResultados.innerText = `Resultados da Web (${resultadosFormatados.length})`;
+                listaExibida = resultadosFormatados;
+                renderizarLista(listaExibida);
+
+            } catch (err) {
+                console.error("Erro na busca externa:", err);
+                tituloResultados.innerText = "Erro na Busca";
+                containerLista.innerHTML = '<p style="text-align:center; color: #ff5555; padding: 20px;">Falha ao conectar aos serviços da web.</p>';
+            }
         }
 
-        function tratarEnter(e) {
-            if (e.key === 'Enter') executarPesquisa();
+        function executarPesquisaManual() {
+            const termo = inputBusca.value.trim().toLowerCase();
+            if (termo.length >= 2) {
+                buscarMusicasWeb(termo);
+            }
         }
 
         audio.onended = () => mudarMusica(1);
