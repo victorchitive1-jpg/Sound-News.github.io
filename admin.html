@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound News - Painel de Gestão (Admin)</title>
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --card-bg: #181b26;
+            --primary-color: #ffffff;
+            --secondary-color: #a0a5b5;
+            --accent-color: #1db954;
+            --border-color: #25293a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .header-admin {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .btn-voltar {
+            background: #232736;
+            color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .btn-voltar:hover {
+            color: #fff;
+            border-color: var(--accent-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: #0f111a;
+            color: #fff;
+            outline: none;
+            font-size: 0.95rem;
+        }
+
+        input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn-gerar {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-gerar:hover {
+            opacity: 0.9;
+        }
+
+        .resultado-area {
+            margin-top: 25px;
+            display: none;
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            background-color: #0f111a;
+            color: var(--accent-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: none;
+            outline: none;
+        }
+
+        .btn-copiar {
+            background-color: #232736;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        .btn-copiar:hover {
+            border-color: var(--accent-color);
+        }
+
+        .passos-instrucao {
+            margin-top: 20px;
+            background: #202433;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            line-height: 1.5;
+        }
+
+        .passos-instrucao ol {
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-admin">
+            <h2>⚙️ Painel de Gestão (Admin)</h2>
+            <a href="index.html" class="btn-voltar">⬅️ Voltar ao Site</a>
+        </div>
+
+        <h3>Adicionar Nova Música</h3>
+        <p style="color: var(--secondary-color); font-size: 0.85rem; margin-bottom: 20px;">
+            Preencha os campos abaixo para gerar a estrutura de dados pronta a adicionar ao teu <b>musicas.json</b>.
+        </p>
+
+        <form id="form-musica">
+            <div class="form-group">
+                <label>ID da Música (Número seguinte ao último do json):</label>
+                <input type="number" id="idMusica" placeholder="Ex: 25" required>
+            </div>
+
+            <div class="form-group">
+                <label>Título da Música:</label>
+                <input type="text" id="titulo" placeholder="Ex: Amor de Mãe" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nome do Artista:</label>
+                <input type="text" id="artista" placeholder="Ex: Zé Ngola" required>
+            </div>
+
+            <div class="form-group">
+                <label>Género Musical:</label>
+                <select id="genero">
+                    <option value="Marrabenta">Marrabenta</option>
+                    <option value="Pandza">Pandza</option>
+                    <option value="HipHop">HipHop</option>
+                    <option value="Kizomba">Kizomba</option>
+                    <option value="Afro House">Afro House</option>
+                    <option value="Gospel">Gospel</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Nome EXATO do Ficheiro MP3 (como subiste no GitHub):</label>
+                <input type="text" id="audio" placeholder="Ex: Ze Ngola - Amor de Mae.mp3" required>
+            </div>
+
+            <div class="form-group">
+                <label>Ficheiro de Capa (Opcional):</label>
+                <input type="text" id="capa" value="capa.jpg">
+            </div>
+
+            <button type="button" class="btn-gerar" onclick="gerarJSON()">✨ Gerar Código JSON</button>
+        </form>
+
+        <div class="resultado-area" id="resultado-area">
+            <h4 style="margin-bottom: 8px;">Código Gerado:</h4>
+            <textarea id="json-output" readonly></textarea>
+            <button class="btn-copiar" onclick="copiarCodigo()">📋 Copiar Código</button>
+
+            <div class="passos-instrucao">
+                <strong>📌 Como publicar no site:</strong>
+                <ol>
+                    <li>Certifica-te de que já fizeste o upload do ficheiro <code>.mp3</code> no GitHub.</li>
+                    <li>Clica no botão <strong>Copiar Código</strong> acima.</li>
+                    <li>Abre o teu ficheiro <strong>musicas.json</strong> no GitHub e clica no ícone do lápis ✏️.</li>
+                    <li>Cola este código no final da lista (antes do último parêntesis reto <code>]</code>).</li>
+                    <li>Não te esqueças de colocar uma vírgula <code>,</code> após a música anterior!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function gerarJSON() {
+            const id = parseInt(document.getElementById('idMusica').value);
+            const titulo = document.getElementById('titulo').value.trim();
+            const artista = document.getElementById('artista').value.trim();
+            const genero = document.getElementById('genero').value;
+            const audio = document.getElementById('audio').value.trim();
+            const capa = document.getElementById('capa').value.trim() || 'capa.jpg';
+
+            if (!id || !titulo || !artista || !audio) {
+                alert("Por favor, preencha todos os campos obrigatórios!");
+                return;
+            }
+
+            const novaMusica = {
+                "id": id,
+                "titulo": titulo,
+                "artista": artista,
+                "genero": genero,
+                "capa": capa,
+                "audio": audio,
+                "downloadNome": `${artista} - ${titulo}.mp3`,
+                "downloadsIniciais": 0,
+                "likesIniciais": 0
+            };
+
+            const jsonFormatado = JSON.stringify(novaMusica, null, 2);
+            document.getElementById('json-output').value = ",\n" + jsonFormatado;
+            document.getElementById('resultado-area').style.display = 'block';
+        }
+
+        function copiarCodigo() {
+            const textarea = document.getElementById('json-output');
+            textarea.select();
+            document.execCommand('copy');
+            alert("Código copiado com sucesso! Agora cola no musicas.json no GitHub.");
+        }
+    </script>
+</body>
+</html>
